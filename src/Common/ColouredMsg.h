@@ -166,3 +166,21 @@ public:
   explicit BrightPurpleMsg(std::string msg, int padding)
     : ColouredMsg(msg, padding, Common::Console::Color::BrightMagenta) {}
 };
+
+class BlueMsg : public ColouredMsg {
+public:
+  explicit BlueMsg(std::string msg)
+    : ColouredMsg(msg, Common::Console::Color::Blue) {}
+
+  explicit BlueMsg(std::string msg, int padding)
+    : ColouredMsg(msg, padding, Common::Console::Color::Blue) {}
+};
+
+class BrightBlueMsg : public ColouredMsg {
+public:
+  explicit BrightBlueMsg(std::string msg)
+    : ColouredMsg(msg, Common::Console::Color::BrightBlue) {}
+
+  explicit BrightBlueMsg(std::string msg, int padding)
+    : ColouredMsg(msg, padding, Common::Console::Color::BrightBlue) {}
+};

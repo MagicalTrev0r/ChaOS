@@ -10,11 +10,12 @@
 
 #include "DaemonCommandsHandler.h"
 
-#include "P2p/NetNode.h"
+#include "Common/ColouredMsg.h"
 #include "CryptoNoteCore/Miner.h"
 #include "CryptoNoteCore/Core.h"
 #include "CryptoNoteCore/Currency.h"
 #include "CryptoNoteProtocol/CryptoNoteProtocolHandler.h"
+#include "P2p/NetNode.h"
 #include "Serialization/SerializationTools.h"
 #include "version.h"
 
@@ -68,10 +69,22 @@ bool DaemonCommandsHandler::exit(const std::vector<std::string>& args) {
   m_srv.sendStopSignal();
   return true;
 }
-
 //--------------------------------------------------------------------------------
 bool DaemonCommandsHandler::help(const std::vector<std::string>& args) {
   std::cout << get_commands_str() << ENDL;
+  return true;
+}
+//--------------------------------------------------------------------------------
+bool DaemonCommandsHandler::support(const std::vector<std::string>& args) {
+  std::cout << std::endl
+    << BrightYellowMsg("If you need further assistance, you can get help directly from the core team") << std::endl
+    << BrightYellowMsg("or community members through any of these methods:") << std::endl
+    << BrightPurpleMsg("\tDiscord: ") << "  https://discord.gg/PHyGJjg" << std::endl
+    << BrightRedMsg("\tReddit:  ") << "  https://reddit.com/r/CXCHE" << std::endl
+    << BrightBlueMsg("\tTelegram:") << "  https://t.me/cxche" << std::endl
+    << BrightBlueMsg("\tTwitter: ") << "  https://twitter.com/CacheCore" << std::endl
+    << std::endl;
+
   return true;
 }
 //--------------------------------------------------------------------------------

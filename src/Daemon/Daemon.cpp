@@ -45,31 +45,31 @@ namespace po = boost::program_options;
 
 namespace
 {
-  const command_line::arg_descriptor<std::string> arg_version = {"version", "Shows OS and Cache Software version details"};
-  const command_line::arg_descriptor<std::string> arg_log_file    = {"log-file", "", ""};
-  const command_line::arg_descriptor<std::string> arg_set_node_id = { "node-id", "If you're setting your daemon to become a public node, then setting an ID is recommended", "" };
-  const command_line::arg_descriptor<std::string> arg_set_view_key = { "view-key", "Set secret view-key for remote node fee confirmation", "" };
-  const command_line::arg_descriptor<int>         arg_log_level   = {"log-level", "", 2}; // info level
-  const command_line::arg_descriptor<bool>        arg_console     = {"no-console", "Disable daemon console commands"};
-  const command_line::arg_descriptor<bool>        arg_testnet_on  = {"testnet", "Used to deploy test nets. Checkpoints and hardcoded seeds are ignored, "
-    "network id is changed. Use it with --data-dir flag. The wallet must be launched with --testnet flag.", false};
-  const command_line::arg_descriptor<bool>        arg_print_genesis_tx = { "print-genesis-tx", "Prints genesis' block tx hex to insert it to config and exits" };
-  const command_line::arg_descriptor<std::string> arg_load_checkpoints   = {"load-checkpoints", "Launched with --load-checkpoints=filename.csv for faster initial blockchain sync", "default"};
+  const command_line::arg_descriptor<std::string> arg_version   = {"version", "Shows OS and Cache Software version details"};
+  const command_line::arg_descriptor<std::string> arg_log_file  = {"log-file", "", ""};
+  const command_line::arg_descriptor<int>         arg_log_level = {"log-level", "", 2};
+  const command_line::arg_descriptor<bool>        arg_console   = {"no-console", "Disable daemon console commands"};
+
+  const command_line::arg_descriptor<std::string> arg_load_checkpoints = {"load-checkpoints", "Launched with --load-checkpoints=filename.csv for faster initial blockchain sync", "default"};
+
+  const command_line::arg_descriptor<std::string> arg_set_node_id     = { "node-id", "If you're setting your daemon to become a public node, then setting an ID is recommended", "" };
   const command_line::arg_descriptor<std::string> arg_set_fee_address = { "fee-address", "Sets the convenience charge address for remote wallets that use this node.", "" };
-  const command_line::arg_descriptor<int>         arg_set_fee_amount = { "fee-amount", "Sets the convenience charge amount for remote wallets that use this node.", 0 };
+  const command_line::arg_descriptor<int>         arg_set_fee_amount  = { "fee-amount", "Sets the convenience charge amount for remote wallets that use this node.", 0 };
+  const command_line::arg_descriptor<std::string> arg_set_view_key    = { "view-key", "Set secret view-key for remote node fee confirmation", "" };
+
+  /* to be deleted eventually */
+  const command_line::arg_descriptor<bool> arg_testnet_on = {"testnet", "Used to deploy a private testnet. Use it with --data-dir flag. \"cache-wallet\" must be launched with --testnet flag.", false};
+  const command_line::arg_descriptor<bool> arg_print_hash = { "print-hash", "Creates an example and exits" };
 }
 
 bool command_line_preprocessor(const boost::program_options::variables_map& vm, LoggerRef& logger);
 
-void print_genesis_tx_hex() {
+void print_example_hash() {
   Logging::ConsoleLogger logger;
   CryptoNote::Transaction tx = CryptoNote::CurrencyBuilder(logger).generateGenesisTransaction();
   CryptoNote::BinaryArray txb = CryptoNote::toBinaryArray(tx);
   std::string tx_hex = Common::toHex(txb);
-
-  std::cout << "Insert this line into your coin configuration file as is: " << std::endl;
-  std::cout << "const char GENESIS_COINBASE_TX_HEX[] = \"" << tx_hex << "\";" << std::endl;
-
+  std::cout << "Created Hash: " << tx_hex << "." << std::endl;
   return;
 }
 
@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
     command_line::add_arg(desc_cmd_sett, arg_console);
   	command_line::add_arg(desc_cmd_sett, arg_set_view_key);
     command_line::add_arg(desc_cmd_sett, arg_testnet_on);
-    command_line::add_arg(desc_cmd_sett, arg_print_genesis_tx);
+    command_line::add_arg(desc_cmd_sett, arg_print_hash);
     command_line::add_arg(desc_cmd_sett, arg_load_checkpoints);
     command_line::add_arg(desc_cmd_sett, arg_set_fee_address);
     command_line::add_arg(desc_cmd_sett, arg_set_fee_amount);
@@ -140,8 +140,8 @@ int main(int argc, char* argv[])
         return false;
       }
 
-      if (command_line::get_arg(vm, arg_print_genesis_tx)) {
-		    print_genesis_tx_hex();
+      if (command_line::get_arg(vm, arg_print_hash)) {
+		    print_example_hash();
         return false;
       }
 
@@ -171,7 +171,7 @@ int main(int argc, char* argv[])
     Level cfgLogLevel = static_cast<Level>(static_cast<int>(Logging::ERROR) + command_line::get_arg(vm, arg_log_level));
     logManager.configure(buildLoggerConfiguration(cfgLogLevel, cfgLogFile));
 
-    std::cout << std::endl << std::endl;
+    std::cout << std::endl;
     logger(INFO, BRIGHT_MAGENTA) << "\tCache v" << PROJECT_VERSION;
     std::cout << std::endl;
 
@@ -356,9 +356,9 @@ int main(int argc, char* argv[])
 
 bool command_line_preprocessor(const boost::program_options::variables_map &vm, LoggerRef &logger) {
   if (command_line::get_arg(vm, command_line::arg_version)) {
-    std::cout << "\t-- Version Information --" << std::endl
-      << BrightPurpleMsg("Cache Software : v") << BrightYellowMsg(PROJECT_VERSION) << std::endl
-      << BrightPurpleMsg("OS Version : ") << BrightYellowMsg(Tools::get_os_version_string()) << std::endl;
+    std::cout << "\t==[ Version Information ]==" << std::endl
+      << BrightPurpleMsg("Cache Software: v") << BrightYellowMsg(PROJECT_VERSION) << std::endl
+      << BrightPurpleMsg("OS Version: ") << BrightYellowMsg(Tools::get_os_version_string()) << std::endl;
     return true;
   }
 
