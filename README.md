@@ -40,6 +40,6 @@
 
 [![discord](https://github.com/project-en4orcer/Assets/blob/master/social-icons/bubble/discord-50px.png)](https://discord.gg/PHyGJjg)
 [![github](https://github.com/project-en4orcer/Assets/blob/master/social-icons/bubble/github-50px.png)](https://github.com/cache-core)
-[![reddit](https://github.com/project-en4orcer/Assets/blob/master/social-icons/bubble/redd-50px.png)](https://reddit.com/r/cxche)
+[![reddit](https://github.com/project-en4orcer/Assets/blob/master/social-icons/bubble/reddit-50px.png)](https://reddit.com/r/cxche)
 [![telegram](https://github.com/project-en4orcer/Assets/blob/master/social-icons/bubble/telegram-50px.png)](https://t.me/cxche)
 [![twitter](https://github.com/project-en4orcer/Assets/blob/master/social-icons/bubble/twitter-50px.png)](https://twitter.com/cachecore)
