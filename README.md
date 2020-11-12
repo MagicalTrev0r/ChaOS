@@ -1,7 +1,7 @@
-## Cache (Testnet Repository)
-> A private cryptographic currency with decentralised finance features.
+## Cache ($CXCHE)
+> Privacy Focused Decentralised Banking.
 
-![status](https://img.shields.io/badge/Status-Testnet-orange)
+![status](https://img.shields.io/badge/Status-Mainnet-green)
 ![version](https://img.shields.io/badge/Version-1.0.0-blue)
 
 ***
@@ -9,15 +9,29 @@
 ### Docs & Guides
 > Master these, master life.
 
-- [Project Ideas](https://github.com/cache-core/project-documents/blob/master/project-idea.md)
+##### User Guides List
 
-`*todo*`
+- [Build Core Clients](https://github.com/Cache-core/Guides/blob/master/build-core.md)
+- [Cache Daemon Client](https://github.com/Cache-core/Guides/blob/master/cache-daemon.md)
+- [Cache Wallet Client](https://github.com/Cache-core/Guides/blob/master/cache-wallet.md)
+
+##### Developer Guides List
+
+- [NPM - `cache-api-js`](https://www.npmjs.com/package/cache-api-js)
+  - [Source Code](https://github.com/Cache-core/Cache-api-js)
+
+##### Misc
+
+- [Emission Guide](https://github.com/Cache-core/Guides/blob/master/emission.md)
+- [Cache Project Initial Minor Paper](https://github.com/Cache-core/Guides/blob/master/project.md)
+
 
 ***
 
-| Build | Status | Download |
+| Branch | Status | Download |
 |-------|--------|----------|
-| `master` | [![Build status](https://ci.appveyor.com/api/projects/status/6usy0rs43l938415/branch/master?svg=true)](https://ci.appveyor.com/project/En4orcer/testnet/branch/master) | [![Win x64](https://img.shields.io/badge/Win%20x64-Download-blue)](https://ci.appveyor.com/project/En4orcer/testnet/build/artifacts) |
+| `main` | [![Build status](https://ci.appveyor.com/api/projects/status/i25lltupg55v6uwq/branch/main?svg=true)](https://ci.appveyor.com/project/En4orcer/cache-7su1f/branch/main) | [![Win x64](https://img.shields.io/badge/Win%20x64-Download-blue)](https://ci.appveyor.com/project/En4orcer/cache-7su1f/build/artifacts) |
+| `development` | [![Build status](https://ci.appveyor.com/api/projects/status/i25lltupg55v6uwq/branch/development?svg=true)](https://ci.appveyor.com/project/En4orcer/cache-7su1f/branch/main) | [![Win x64](https://img.shields.io/badge/Win%20x64-Download-blue)](https://ci.appveyor.com/project/En4orcer/cache-7su1f/build/artifacts) |
 
 ***
 
@@ -26,16 +40,6 @@
 
 [![discord](https://github.com/project-en4orcer/Assets/blob/master/social-icons/bubble/discord-50px.png)](https://discord.gg/PHyGJjg)
 [![github](https://github.com/project-en4orcer/Assets/blob/master/social-icons/bubble/github-50px.png)](https://github.com/cache-core)
-[![twitter](https://github.com/project-en4orcer/Assets/blob/master/social-icons/bubble/twitter-50px.png)](https://twitter.com/deven4orcer)
-
-***
-
-### Shoulders of Giants
-> We stand on the shoulders of the giants that came before us.
-
-- [ByteCoin](https://bytecoin.org/)
-- [Conceal](https://conceal.network/)
-- [Karbo](https://karbo.io/)
-- [Masari](https://getmasari.org/)
-- [Monero](https://www.getmonero.org/)
-- [TurtleCoin](https://turtlecoin.lol/)
+[![reddit](https://github.com/project-en4orcer/Assets/blob/master/social-icons/bubble/redd-50px.png)](https://reddit.com/r/cxche)
+[![telegram](https://github.com/project-en4orcer/Assets/blob/master/social-icons/bubble/telegram-50px.png)](https://t.me/cxche)
+[![twitter](https://github.com/project-en4orcer/Assets/blob/master/social-icons/bubble/twitter-50px.png)](https://twitter.com/cachecore)
