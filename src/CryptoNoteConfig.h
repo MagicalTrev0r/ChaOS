@@ -93,7 +93,7 @@ namespace CryptoNote {
     static_assert(UPGRADE_VOTING_WINDOW > 1, "Bad UPGRADE_VOTING_WINDOW");
   } // namespace parameters
 
-  const uint64_t START_BLOCK_REWARD = (UINT64_C(5000) * parameters::POINT);
+  const uint64_t BLOCK_REWARD = (UINT64_C(5) * parameters::COIN);
   const uint64_t REWARD_INCREASE_INTERVAL = (parameters::EXPECTED_NUMBER_OF_BLOCKS_PER_DAY * 60);
   const uint64_t FOUNDATION_TRUST = (UINT64_C(15000000) * parameters::COIN);
 

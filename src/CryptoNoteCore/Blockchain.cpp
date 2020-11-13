@@ -1991,12 +1991,6 @@ namespace CryptoNote
       return false;
     }
 
-    if (txin.outputIndexes.size() < CryptoNote::parameters::MINIMUM_MIXIN)
-    {
-      logger(ERROR, BRIGHT_RED) << "ring size is too small: " << txin.outputIndexes.size() << " Expected: " + CryptoNote::parameters::MINIMUM_MIXIN;
-      return false;
-    }
-
     if (!(sig.size() == output_keys.size()))
     {
       logger(ERROR, BRIGHT_RED) << "internal error: tx signatures count=" << sig.size() << " mismatch with outputs keys count for inputs=" << output_keys.size();

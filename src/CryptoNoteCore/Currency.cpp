@@ -51,24 +51,6 @@ namespace CryptoNote
       1000000000000000000, 2000000000000000000, 3000000000000000000, 4000000000000000000, 5000000000000000000, 6000000000000000000, 7000000000000000000, 8000000000000000000, 9000000000000000000,
       10000000000000000000ull};
 
-  const std::vector<uint64_t> Currency::REWARD_INCREASING_FACTOR = {
-      0, 25000, 50000, 75000,
-      100000, 125000, 150000, 175000,
-      200000, 225000, 250000, 275000,
-      300000, 325000, 350000, 375000,
-      400000, 425000, 450000, 475000,
-      500000, 525000, 550000, 575000,
-      600000, 625000, 650000, 675000,
-      700000, 725000, 750000, 775000,
-      800000, 825000, 850000, 875000,
-      900000, 925000, 950000, 975000,
-      1000000, 1025000, 1050000, 1075000,
-      1100000, 1125000, 1150000, 1175000,
-      1200000, 1225000, 1250000, 1275000,
-      1300000, 1325000, 1350000, 1375000,
-      1400000, 1425000, 1450000, 1475000,
-      1500000};
-
   bool Currency::init()
   {
     if (!generateGenesisBlock())
@@ -135,19 +117,9 @@ namespace CryptoNote
 
   uint64_t Currency::baseRewardFunction(uint64_t alreadyGeneratedCoins, uint32_t height) const
   {
-    if (height == 1) {
-      return FOUNDATION_TRUST;
-    }
+    if (height == 1) { return FOUNDATION_TRUST; }
 
-    uint64_t incrIntervals = static_cast<uint64_t>(height) / REWARD_INCREASE_INTERVAL;
-    assert(incrIntervals < REWARD_INCREASING_FACTOR.size());
-    uint64_t base_reward = START_BLOCK_REWARD + REWARD_INCREASING_FACTOR[incrIntervals];
-    /**
-     * If in future we was to cap the Max Block Reward a miner can earn, this is where
-     *    and how to do it.
-     * uint64_t mBR = UINT64_C(10) * CryptoNote::parameters::POINT;
-     * base_reward = (std::min)(base_reward, mBR);
-     */
+    uint64_t base_reward = BLOCK_REWARD;
     base_reward = (std::min)(base_reward, m_moneySupply - alreadyGeneratedCoins);
 
     return base_reward;
@@ -194,25 +166,18 @@ namespace CryptoNote
 
   uint64_t Currency::calculateInterest(uint64_t amount, uint32_t term) const
   {
-
     uint64_t returnVal = 0;
-    uint64_t amount4Humans = amount / 1000000;
+    uint64_t amount4Humans = amount / 100000;
+    float baseInterest = static_cast<float>(0.049);
 
-    float baseInterest = static_cast<float>(0.029);
-
-    if (amount4Humans >= 10000 && amount4Humans < 20000)
-      baseInterest = static_cast<float>(0.039);
-
-    if (amount4Humans >= 20000)
-      baseInterest = static_cast<float>(0.049);
-
-    /* Consensus 2019 - Monthly deposits */
+    if (amount4Humans >= 5000 && amount4Humans < 10000) { baseInterest = static_cast<float>(0.054); }
+    if (amount4Humans >= 10000 && amount4Humans < 15000) { baseInterest = static_cast<float>(0.059); }
+    if (amount4Humans >= 15000 && amount4Humans < 20000) { baseInterest = static_cast<float>(0.064); }
+    if (amount4Humans >= 20000) { baseInterest = static_cast<float>(0.069); }
 
     float months = term / 21900;
-    if (months > 12)
-    {
-      months = 12;
-    }
+    if (months > 12) { months = 12; }
+
     float ear = baseInterest + (months - 1) * 0.001;
     float eir = (ear / 12) * months;
     returnVal = static_cast<uint64_t>(eir);
