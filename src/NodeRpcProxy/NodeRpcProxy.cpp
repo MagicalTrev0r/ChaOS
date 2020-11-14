@@ -13,6 +13,7 @@
 
 #include <HTTP/HttpRequest.h>
 #include <HTTP/HttpResponse.h>
+#include <Logging/ILogger.h>
 #include <System/ContextGroup.h>
 #include <System/Dispatcher.h>
 #include <System/Event.h>
@@ -50,7 +51,8 @@ std::error_code interpretResponseStatus(const std::string& status) {
 
 }
 
-NodeRpcProxy::NodeRpcProxy(const std::string& nodeHost, unsigned short nodePort) :
+NodeRpcProxy::NodeRpcProxy(const std::string& nodeHost, unsigned short nodePort, Logging::ILogger& logger) :
+    m_logger(logger, "NodeRpcProxy"),
     m_rpcTimeout(10000),
     m_pullInterval(5000),
     m_nodeHost(nodeHost),
@@ -61,7 +63,11 @@ NodeRpcProxy::NodeRpcProxy(const std::string& nodeHost, unsigned short nodePort)
 }
 
 NodeRpcProxy::~NodeRpcProxy() {
+  try {
     shutdown();
+  } catch (std::exception& ex) {
+    m_logger(Logging::FATAL) << "Node could not shutdown properly: " << ex.what();
+  }
 }
 
 void NodeRpcProxy::resetInternalState() {
@@ -141,9 +147,24 @@ void NodeRpcProxy::workerThread(const INode::Callback& initialized_callback) {
     initialized_callback(std::error_code());
 
     contextGroup.spawn([this]() {
+      const uint8_t MaxRetries = 5;
       Timer pullTimer(*m_dispatcher);
+      uint8_t continiousExceptionCounter = 0;
       while (!m_stop) {
-        updateNodeStatus();
+        try {
+          updateNodeStatus();
+          continiousExceptionCounter = 0;
+        } catch(std::exception& ex) {
+          m_logger(Logging::ERROR) << "Failed to updated node status (try " << std::to_string(continiousExceptionCounter + 1)
+                          << " of " << std::to_string(MaxRetries) << "): " << ex.what();
+          if(++continiousExceptionCounter > MaxRetries)
+            throw ex;  // The endpoint failed MaxRetries times, we should break here.
+          else
+          /* We encountered an error, we should give the endpoint some time to
+             recover before retrying. */
+            pullTimer.sleep(std::chrono::seconds{1}); 
+                                                        
+          }
         if (!m_stop) {
           pullTimer.sleep(std::chrono::milliseconds(m_pullInterval));
         }
@@ -153,7 +174,8 @@ void NodeRpcProxy::workerThread(const INode::Callback& initialized_callback) {
     contextGroup.wait();
     // Make sure all remote spawns are executed
     m_dispatcher->yield();
-  } catch (std::exception&) {
+  } catch (std::exception& ex) {
+    m_logger(Logging::FATAL) << "Error in node synchronization: '" << ex.what() << "\n', going to shutdown...";
   }
 
   m_dispatcher = nullptr;
@@ -166,7 +188,7 @@ void NodeRpcProxy::workerThread(const INode::Callback& initialized_callback) {
 
 void NodeRpcProxy::updateNodeStatus() {
   bool updateBlockchain = true;
-  while (updateBlockchain) {
+  while (updateBlockchain && !m_stop) {
     updateBlockchainStatus();
     updateBlockchain = !updatePoolStatus();
   }

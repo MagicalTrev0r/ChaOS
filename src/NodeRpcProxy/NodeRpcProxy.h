@@ -15,6 +15,7 @@
 
 #include "Common/ObserverManager.h"
 #include "INode.h"
+#include "Logging/LoggerRef.h"
 
 namespace System {
   class ContextGroup;
@@ -34,7 +35,7 @@ public:
 
 class NodeRpcProxy : public CryptoNote::INode {
 public:
-  NodeRpcProxy(const std::string& nodeHost, unsigned short nodePort);
+  NodeRpcProxy(const std::string& nodeHost, unsigned short nodePort, Logging::ILogger& logger);
   virtual ~NodeRpcProxy();
 
   virtual bool addObserver(CryptoNote::INodeObserver* observer) override;
@@ -119,6 +120,7 @@ private:
   System::ContextGroup* m_context_group = nullptr;
   Tools::ObserverManager<CryptoNote::INodeObserver> m_observerManager;
   Tools::ObserverManager<CryptoNote::INodeRpcProxyObserver> m_rpcProxyObserverManager;
+  Logging::LoggerRef m_logger;
 
   const std::string m_nodeHost;
   const unsigned short m_nodePort;
