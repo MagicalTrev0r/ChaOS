@@ -51,6 +51,8 @@ namespace CryptoNote
       1000000000000000000, 2000000000000000000, 3000000000000000000, 4000000000000000000, 5000000000000000000, 6000000000000000000, 7000000000000000000, 8000000000000000000, 9000000000000000000,
       10000000000000000000ull};
 
+  const std::vector<uint64_t> Currency::REWARD_INCREASING_FACTOR = { 0, 25000, 50000, 75000, 100000, 125000, 150000, 175000, 200000 };
+
   bool Currency::init()
   {
     if (!generateGenesisBlock())
@@ -119,7 +121,15 @@ namespace CryptoNote
   {
     if (height == 1) { return FOUNDATION_TRUST; }
 
-    uint64_t base_reward = BLOCK_REWARD;
+    uint64_t incrIntervals = static_cast<uint64_t>(height) / REWARD_INCREASE_INTERVAL;
+    uint64_t base_reward;
+
+    if (incrIntervals >= REWARD_INCREASING_FACTOR.size()) {
+      base_reward = BLOCK_REWARD + REWARD_INCREASING_FACTOR[incrIntervals];
+    } else if (incrIntervals < REWARD_INCREASING_FACTOR.size()) {
+      base_reward = STATIC_BLOCK_REWARD;
+    }
+
     base_reward = (std::min)(base_reward, m_moneySupply - alreadyGeneratedCoins);
 
     return base_reward;
