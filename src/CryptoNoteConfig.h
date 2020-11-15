@@ -102,7 +102,7 @@ namespace CryptoNote {
   const char     PROJECT_NAME[] = "Cache";
   const char     DATA_DIR[] = "cache-blockchain-data";
 
-  const char     GENESIS_COINBASE_TX_HEX[] = "010a01ff0001a0c21e029b2e4c0281c0b02e7c53291a94d1d0cbff8883f8024f5142ee494ffbbd08807121019630145a2d2c5aab49a73f3a333733a699f492eb22dce0eaed5b251a089ff0e1";
+  const char     GENESIS_COINBASE_TX_HEX[] = "010a01ff0001a0c21e029b2e4c0281c0b02e7c53291a94d1d0cbff8883f8024f5142ee494ffbbd08807121015149ab15af1e07d68f42a3de7876aa48c948809445f2eb08b2cb5f1f5006cd58";
   const uint32_t GENESIS_NONCE = 10000;
   const uint64_t GENESIS_TIMESTAMP = 1605434400;
 
