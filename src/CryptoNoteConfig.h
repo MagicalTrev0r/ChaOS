@@ -106,8 +106,8 @@ namespace CryptoNote {
   const uint32_t GENESIS_NONCE = 10000;
   const uint64_t GENESIS_TIMESTAMP = 1605434400;
 
-  const int      P2P_DEFAULT_PORT = 39999;
-  const int      RPC_DEFAULT_PORT = 40000;
+  const int      P2P_DEFAULT_PORT = 38999;
+  const int      RPC_DEFAULT_PORT = 39000;
 
   const uint8_t  P2P_CURRENT_VERSION = 1;
   const uint8_t  P2P_MINIMUM_VERSION = 1;
