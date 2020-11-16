@@ -34,6 +34,16 @@ namespace CryptoNote {
     const uint64_t MINIMUM_FEE_BANKING = UINT64_C(100);
     const uint64_t DEFAULT_DUST_THRESHOLD = UINT64_C(10);
 
+	         /* Fee adjustment V1 */
+    const uint64_t MINIMUM_FEE_V1                                = UINT64_C(10);
+
+    const uint64_t MINIMUM_FEE_V1_HEIGHT                         = 1337;
+
+	          /* Fee adjustment V2 */
+    const uint64_t MINIMUM_FEE_V2                                = UINT64_C(0);
+
+    const uint64_t MINIMUM_FEE_V2_HEIGHT                         = 1337;
+    
     const size_t   MINIMUM_MIXIN = 0;
     const uint16_t DEFAULT_MIXIN = 5;
 
