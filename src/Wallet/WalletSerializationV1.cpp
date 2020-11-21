@@ -10,15 +10,19 @@
 #include <sstream>
 #include <type_traits>
 #include <boost/optional.hpp>
+
+#include "crypto/crypto.h"
 #include "Common/MemoryInputStream.h"
 #include "Common/StdInputStream.h"
 #include "Common/StdOutputStream.h"
+#include "CryptoNoteCore/CryptoNoteBasic.h"
 #include "CryptoNoteCore/CryptoNoteSerialization.h"
 #include "CryptoNoteCore/CryptoNoteTools.h"
 
 #include "Serialization/BinaryOutputStreamSerializer.h"
 #include "Serialization/BinaryInputStreamSerializer.h"
 #include "Serialization/SerializationOverloads.h"
+#include "WalletLegacy/WalletLegacySerializer.h"
 
 #include "Wallet/WalletErrors.h"
 #include "WalletLegacy/KeysStorage.h"
@@ -26,6 +30,7 @@
 
 using namespace Common;
 using namespace Crypto;
+using namespace CryptoNote;
 
 namespace {
 
@@ -74,7 +79,8 @@ struct WalletTransactionDto {
     creationTime = wallet.creationTime;
     unlockTime = wallet.unlockTime;
     extra = wallet.extra;
-    secretKey = wallet.secretKey;
+    if (wallet.secretKey)
+      secretKey = reinterpret_cast<const Crypto::SecretKey&>(wallet.secretKey.get());
   }
 
   CryptoNote::WalletTransactionState state;
@@ -86,7 +92,7 @@ struct WalletTransactionDto {
   uint64_t creationTime;
   uint64_t unlockTime;
   std::string extra;
-  SecretKey secretKey;
+  boost::optional<Crypto::SecretKey> secretKey = CryptoNote::NULL_SECRET_KEY;
 };
 
 //DO NOT CHANGE IT
@@ -146,7 +152,8 @@ void serialize(WalletTransactionDto& value, CryptoNote::ISerializer& serializer)
   serializer(value.creationTime, "creation_time");
   serializer(value.unlockTime, "unlock_time");
   serializer(value.extra, "extra");
-  serializer(value.secretKey, "secret_key");
+  if (value.secretKey)
+    serializer(value.secretKey.get(), "secret_key");
 }
 
 void serialize(WalletTransferDto& value, CryptoNote::ISerializer& serializer) {
@@ -248,7 +255,8 @@ CryptoNote::WalletTransaction convert(const CryptoNote::WalletLegacyTransaction&
   mtx.unlockTime = tx.unlockTime;
   mtx.extra = tx.extra;
   mtx.isBase = tx.isCoinbase;
-  mtx.secretKey = tx.secretKey;
+  if(tx.secretKey)
+    mtx.secretKey = reinterpret_cast<const Crypto::SecretKey&>(tx.secretKey.get());
 
   return mtx;
 }
@@ -873,7 +881,8 @@ void WalletSerializer::loadTransactions(Common::IInputStream& source, CryptoCont
     tx.unlockTime = dto.unlockTime;
     tx.extra = dto.extra;
     tx.isBase = false;
-    tx.secretKey = dto.secretKey;
+    if (dto.secretKey)
+      tx.secretKey = reinterpret_cast<const Crypto::SecretKey&>(dto.secretKey.get());
 
     m_transactions.get<RandomAccessIndex>().push_back(std::move(tx));
   }

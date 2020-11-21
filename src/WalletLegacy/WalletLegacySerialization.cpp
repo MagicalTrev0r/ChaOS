@@ -68,7 +68,9 @@ void serialize(WalletLegacyTransaction& txi, CryptoNote::ISerializer& serializer
   serializer(txi.timestamp, "timestamp");
   serializer(txi.unlockTime, "unlock_time");
   serializer(txi.extra, "extra");
-  serializer(txi.secretKey, "secret_key");
+  Crypto::SecretKey secretKey = reinterpret_cast<const Crypto::SecretKey&>(txi.secretKey.get());
+  serializer(secretKey, "secret_key");
+  txi.secretKey = secretKey;
 
   uint8_t state = static_cast<uint8_t>(txi.state);
   serializer(state, "state");

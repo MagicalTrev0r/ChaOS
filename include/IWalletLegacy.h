@@ -16,6 +16,7 @@
 #include <vector>
 #include <list>
 #include <boost/optional.hpp>
+#include "crypto/crypto.h"
 #include "CryptoNote.h"
 #include "CryptoNoteCore/CryptoNoteBasic.h"
 #include "Rpc/CoreRpcServerCommandsDefinitions.h"
@@ -62,7 +63,7 @@ struct WalletLegacyTransaction {
   uint64_t         sentTime;
   uint64_t         unlockTime;
   Crypto::Hash     hash;
-  Crypto::SecretKey secretKey;
+  boost::optional<Crypto::SecretKey> secretKey = CryptoNote::NULL_SECRET_KEY;
 
   bool             isCoinbase;
   uint32_t         blockHeight;

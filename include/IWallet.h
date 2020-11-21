@@ -94,7 +94,7 @@ struct WalletTransaction
   uint64_t timestamp;
   uint32_t blockHeight;
   Crypto::Hash hash;
-  Crypto::SecretKey secretKey;
+  boost::optional<Crypto::SecretKey> secretKey;
   int64_t totalAmount;
   uint64_t fee;
   uint64_t creationTime;
@@ -217,6 +217,7 @@ public:
 
   virtual size_t getTransactionCount() const = 0;
   virtual WalletTransaction getTransaction(size_t transactionIndex) const = 0;
+  virtual Crypto::SecretKey getTransactionSecretKey(size_t transactionIndex) const = 0;
   virtual size_t getTransactionTransferCount(size_t transactionIndex) const = 0;
   virtual WalletTransfer getTransactionTransfer(size_t transactionIndex, size_t transferIndex) const = 0;
 

@@ -1223,7 +1223,7 @@ bool WalletLegacy::get_tx_key(Crypto::Hash& txid, Crypto::SecretKey& txSecretKey
   TransactionId ti = m_transactionsCache.findTransactionByHash(txid);
   WalletLegacyTransaction transaction;
   getTransaction(ti, transaction);
-  txSecretKey = transaction.secretKey;//.get();
+  txSecretKey = transaction.secretKey.get();
   if (txSecretKey == NULL_SECRET_KEY) {
     return false;
   }
@@ -1236,7 +1236,11 @@ Crypto::SecretKey WalletLegacy::getTxKey(Crypto::Hash& txid)
   TransactionId ti = m_transactionsCache.findTransactionByHash(txid);
   WalletLegacyTransaction transaction;
   getTransaction(ti, transaction);
-  return transaction.secretKey;
+  if (transaction.secretKey) {
+     return reinterpret_cast<const Crypto::SecretKey&>(transaction.secretKey.get());
+  } else {
+     return NULL_SECRET_KEY;
+  }
 }
 
 bool WalletLegacy::checkTxProof(Crypto::Hash& txid, CryptoNote::AccountPublicAddress& address, std::string& sig_str) {

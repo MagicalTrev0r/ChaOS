@@ -441,7 +441,7 @@ namespace CryptoNote
       getObjectHash(tx, transaction.hash);
       transaction.secretKey = transactionSK;
 
-      m_transactionsCache.updateTransaction(context->transactionId, tx, totalAmount, context->selectedTransfers, transaction.secretKey);
+      m_transactionsCache.updateTransaction(context->transactionId, tx, totalAmount, context->selectedTransfers, context->tx_key);
 
       notifyBalanceChanged(events);
 
@@ -519,7 +519,7 @@ namespace CryptoNote
       transactionInfo.depositCount = 1;
 
       Transaction lowlevelTransaction = convertTransaction(*transaction, static_cast<size_t>(m_upperTransactionSizeLimit));
-      m_transactionsCache.updateTransaction(context->transactionId, lowlevelTransaction, totalAmount, context->selectedTransfers, transactionInfo.secretKey);
+      m_transactionsCache.updateTransaction(context->transactionId, lowlevelTransaction, totalAmount, context->selectedTransfers, context->tx_key);
       m_transactionsCache.addCreatedDeposit(depositId, deposit.amount + deposit.interest);
 
       notifyBalanceChanged(events);
