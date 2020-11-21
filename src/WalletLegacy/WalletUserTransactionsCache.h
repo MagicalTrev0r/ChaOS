@@ -66,7 +66,8 @@ public:
   void updateTransaction(TransactionId transactionId,
                          const CryptoNote::Transaction& tx,
                          uint64_t amount,
-                         const std::vector<TransactionOutputInformation>& usedOutputs);
+                         const std::vector<TransactionOutputInformation>& usedOutputs,
+                         Crypto::SecretKey& tx_key);
   void updateTransactionSendingState(TransactionId transactionId, std::error_code ec);
 
   void addCreatedDeposit(DepositId id, uint64_t totalAmount);
@@ -88,6 +89,7 @@ public:
   WalletLegacyTransaction& getTransaction(TransactionId transactionId);
   bool getTransfer(TransferId transferId, WalletLegacyTransfer& transfer) const;
   WalletLegacyTransfer& getTransfer(TransferId transferId);
+  TransactionId findTransactionByHash(const Crypto::Hash& hash);
   bool getDeposit(DepositId depositId, Deposit& deposit) const;
   Deposit& getDeposit(DepositId depositId);
 
@@ -100,7 +102,6 @@ public:
   bool getDepositInTransactionInfo(DepositId depositId, Crypto::Hash& transactionHash, uint32_t& outputInTransaction);
 
   std::vector<Payments> getTransactionsByPaymentIds(const std::vector<PaymentId>& paymentIds) const;
-  TransactionId findTransactionByHash(const Crypto::Hash& hash);
 private:
 
 

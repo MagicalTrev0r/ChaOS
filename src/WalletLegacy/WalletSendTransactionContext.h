@@ -36,6 +36,7 @@ struct SendTransactionContext
   std::vector<tx_message_entry> messages;
   uint64_t ttl;
   uint32_t depositTerm;
+  Crypto::SecretKey tx_key = NULL_SECRET_KEY;
 };
 
 } //namespace CryptoNote

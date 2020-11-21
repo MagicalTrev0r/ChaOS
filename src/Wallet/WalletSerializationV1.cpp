@@ -74,6 +74,7 @@ struct WalletTransactionDto {
     creationTime = wallet.creationTime;
     unlockTime = wallet.unlockTime;
     extra = wallet.extra;
+    secretKey = wallet.secretKey;
   }
 
   CryptoNote::WalletTransactionState state;
@@ -85,7 +86,7 @@ struct WalletTransactionDto {
   uint64_t creationTime;
   uint64_t unlockTime;
   std::string extra;
-  boost::optional<Crypto::SecretKey> secretKey = CryptoNote::NULL_SECRET_KEY;
+  SecretKey secretKey;
 };
 
 //DO NOT CHANGE IT
@@ -145,6 +146,7 @@ void serialize(WalletTransactionDto& value, CryptoNote::ISerializer& serializer)
   serializer(value.creationTime, "creation_time");
   serializer(value.unlockTime, "unlock_time");
   serializer(value.extra, "extra");
+  serializer(value.secretKey, "secret_key");
 }
 
 void serialize(WalletTransferDto& value, CryptoNote::ISerializer& serializer) {
@@ -246,6 +248,7 @@ CryptoNote::WalletTransaction convert(const CryptoNote::WalletLegacyTransaction&
   mtx.unlockTime = tx.unlockTime;
   mtx.extra = tx.extra;
   mtx.isBase = tx.isCoinbase;
+  mtx.secretKey = tx.secretKey;
 
   return mtx;
 }
@@ -665,7 +668,7 @@ void WalletSerializer::loadWallets(Common::IInputStream& source, CryptoContext& 
   deserializeEncrypted(count, "wallets_count", cryptoContext, source);
   cryptoContext.incIv();
 
-  bool isTrackingMode;
+  bool isTrackingMode = false;
 
   for (uint64_t i = 0; i < count; ++i) {
     WalletRecordDto dto;
@@ -721,6 +724,7 @@ void WalletSerializer::subscribeWallets() {
     auto& subscription = m_synchronizer.addSubscription(sub);
     bool r = index.modify(it, [&subscription] (WalletRecord& rec) { rec.container = &subscription.getContainer(); });
     assert(r);
+    if (r) {}
 
     subscription.addObserver(&m_transfersObserver);
   }
@@ -869,6 +873,7 @@ void WalletSerializer::loadTransactions(Common::IInputStream& source, CryptoCont
     tx.unlockTime = dto.unlockTime;
     tx.extra = dto.extra;
     tx.isBase = false;
+    tx.secretKey = dto.secretKey;
 
     m_transactions.get<RandomAccessIndex>().push_back(std::move(tx));
   }

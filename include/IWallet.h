@@ -94,7 +94,7 @@ struct WalletTransaction
   uint64_t timestamp;
   uint32_t blockHeight;
   Crypto::Hash hash;
-  boost::optional<Crypto::SecretKey> secretKey;
+  Crypto::SecretKey secretKey;
   int64_t totalAmount;
   uint64_t fee;
   uint64_t creationTime;

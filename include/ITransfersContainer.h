@@ -34,6 +34,7 @@ namespace CryptoNote
     std::vector<uint8_t> extra;
     Crypto::Hash paymentId;
     std::vector<std::string> messages;
+    Crypto::SecretKey secretKey;
   };
 
   struct TransactionOutputInformation

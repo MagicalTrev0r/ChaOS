@@ -8,6 +8,7 @@
 
 #include "WalletLegacy/WalletDepositInfo.h"
 #include "WalletLegacy/WalletUnconfirmedTransactions.h"
+#include "WalletLegacy/WalletLegacySerializer.h"
 #include "IWalletLegacy.h"
 
 #include "CryptoNoteCore/CryptoNoteSerialization.h"
@@ -26,6 +27,8 @@ void serialize(UnconfirmedTransferDetails& utd, CryptoNote::ISerializer& seriali
   uint64_t txId = static_cast<uint64_t>(utd.transactionId);
   serializer(txId, "transaction_id");
   utd.transactionId = static_cast<size_t>(txId);
+  Crypto::SecretKey secretKey = static_cast<Crypto::SecretKey>(utd.secretKey);
+  serializer(secretKey, "secret_key");
 }
 
 void serialize(UnconfirmedSpentDepositDetails& details, ISerializer& serializer) {
@@ -65,6 +68,7 @@ void serialize(WalletLegacyTransaction& txi, CryptoNote::ISerializer& serializer
   serializer(txi.timestamp, "timestamp");
   serializer(txi.unlockTime, "unlock_time");
   serializer(txi.extra, "extra");
+  serializer(txi.secretKey, "secret_key");
 
   uint8_t state = static_cast<uint8_t>(txi.state);
   serializer(state, "state");
