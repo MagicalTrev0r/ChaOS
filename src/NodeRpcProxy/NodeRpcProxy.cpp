@@ -693,4 +693,18 @@ std::error_code NodeRpcProxy::jsonRpcCommand(const std::string& method, const Re
   return ec;
 }
 
+std::error_code NodeRpcProxy::doGetTransactionHashesByPaymentId(const Crypto::Hash& paymentId, std::vector<Crypto::Hash>& transactionHashes) {
+  COMMAND_RPC_GET_TRANSACTION_HASHES_BY_PAYMENT_ID::request req = AUTO_VAL_INIT(req);
+  COMMAND_RPC_GET_TRANSACTION_HASHES_BY_PAYMENT_ID::response resp = AUTO_VAL_INIT(resp);
+
+  req.paymentId = paymentId;
+  std::error_code ec = jsonCommand("/get_transaction_hashes_by_payment_id", req, resp);
+  if (ec) {
+    return ec;
+  }
+
+  transactionHashes = std::move(resp.transactionHashes);
+  return ec;
+}
+
 }

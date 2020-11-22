@@ -810,6 +810,37 @@ struct reserve_proof {
 	}
 };
 
+struct COMMAND_RPC_CHECK_TX_KEY
+{
+  struct request
+  {
+    std::string txid;
+    std::string txkey;
+    std::string address;
+
+    void serialize(ISerializer &s)
+    {
+      KV_MEMBER(txid)
+      KV_MEMBER(txkey)
+      KV_MEMBER(address)
+    }
+  };
+
+  struct response
+  {
+    uint64_t amount;
+    std::vector<TransactionOutput> outputs;
+    std::string status;
+
+    void serialize(ISerializer &s)
+    {
+      KV_MEMBER(amount)
+      KV_MEMBER(outputs)
+      KV_MEMBER(status)
+    }
+  };
+};
+
 struct K_COMMAND_RPC_CHECK_TX_PROOF {
     struct request {
         std::string tx_id;
@@ -878,6 +909,26 @@ struct COMMAND_RPC_GET_FEE_ADDRESS {
       KV_MEMBER(address)
       KV_MEMBER(amount)
       KV_MEMBER(status)
+    }
+  };
+};
+
+struct COMMAND_RPC_GET_TRANSACTION_HASHES_BY_PAYMENT_ID {
+  struct request {
+    Crypto::Hash paymentId;
+
+    void serialize(ISerializer &s) {
+      KV_MEMBER(paymentId)
+    }
+  };
+
+  struct response {
+    std::vector<Crypto::Hash> transactionHashes;
+    std::string status;
+
+    void serialize(ISerializer &s) {
+      KV_MEMBER(status)
+      KV_MEMBER(transactionHashes);
     }
   };
 };

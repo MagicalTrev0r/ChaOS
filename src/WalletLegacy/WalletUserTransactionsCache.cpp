@@ -237,6 +237,7 @@ TransactionId WalletUserTransactionsCache::addNewTransaction(uint64_t amount,
   transaction.blockHeight = WALLET_LEGACY_UNCONFIRMED_TRANSACTION_HEIGHT;
   transaction.state = WalletLegacyTransactionState::Sending;
   transaction.unlockTime = unlockTime;
+  transaction.secretKey = NULL_SECRET_KEY;
 
   for (const TransactionMessage& message : messages) {
     transaction.messages.push_back(message.message);
@@ -246,11 +247,12 @@ TransactionId WalletUserTransactionsCache::addNewTransaction(uint64_t amount,
 }
 
 void WalletUserTransactionsCache::updateTransaction(
-  TransactionId transactionId, const CryptoNote::Transaction& tx, uint64_t amount, const std::vector<TransactionOutputInformation>& usedOutputs) {
+  TransactionId transactionId, const CryptoNote::Transaction& tx, uint64_t amount, const std::vector<TransactionOutputInformation>& usedOutputs, Crypto::SecretKey& tx_key) {
   // update extra field from created transaction
   auto& txInfo = m_transactions.at(transactionId);
   txInfo.extra.assign(tx.extra.begin(), tx.extra.end());
-  m_unconfirmedTransactions.add(tx, transactionId, amount, usedOutputs);
+  txInfo.secretKey = tx_key;
+  m_unconfirmedTransactions.add(tx, transactionId, amount, usedOutputs, tx_key);
 }
 
 void WalletUserTransactionsCache::updateTransactionSendingState(TransactionId transactionId, std::error_code ec) {
@@ -303,6 +305,7 @@ std::deque<std::unique_ptr<WalletLegacyEvent>> WalletUserTransactionsCache::onTr
     transaction.state = WalletLegacyTransactionState::Active;
     transaction.unlockTime = txInfo.unlockTime;
     transaction.messages = txInfo.messages;
+    transaction.secretKey = NULL_SECRET_KEY;
 
     id = insertTransaction(std::move(transaction));
 

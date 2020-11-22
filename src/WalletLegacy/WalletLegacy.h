@@ -73,6 +73,7 @@ public:
   virtual bool isTrackingWallet();
   virtual TransactionId findTransactionByTransferId(TransferId transferId) override;
   virtual bool getTxProof(Crypto::Hash& txid, CryptoNote::AccountPublicAddress& address, Crypto::SecretKey& tx_key, std::string& sig_str) override;
+  virtual bool checkTxProof(Crypto::Hash& txid, CryptoNote::AccountPublicAddress& address, std::string& sig_str) override;
   virtual std::string getReserveProof(const uint64_t &reserve, const std::string &message) override;
   virtual Crypto::SecretKey getTxKey(Crypto::Hash& txid) override;
   virtual bool get_tx_key(Crypto::Hash& txid, Crypto::SecretKey& txSecretKey) override;
@@ -85,7 +86,7 @@ public:
                                         const WalletLegacyTransfer& transfer,
                                         uint64_t fee,
                                         const std::string& extra = "",
-                                        uint64_t mixIn = 4,
+                                        uint64_t mixIn = 0,
                                         uint64_t unlockTimestamp = 0,
                                         const std::vector<TransactionMessage>& messages = std::vector<TransactionMessage>(),
                                         uint64_t ttl = 0) override;
@@ -93,14 +94,14 @@ public:
                                         std::vector<WalletLegacyTransfer>& transfers,
                                         uint64_t fee,
                                         const std::string& extra = "",
-                                        uint64_t mixIn = 4,
+                                        uint64_t mixIn = 0,
                                         uint64_t unlockTimestamp = 0,
                                         const std::vector<TransactionMessage>& messages = std::vector<TransactionMessage>(),
                                         uint64_t ttl = 0) override;
   virtual size_t estimateFusion(const uint64_t& threshold);
   virtual std::list<TransactionOutputInformation> selectFusionTransfersToSend(uint64_t threshold, size_t minInputCount, size_t maxInputCount);
   virtual TransactionId sendFusionTransaction(const std::list<TransactionOutputInformation>& fusionInputs, uint64_t fee, const std::string& extra = "", uint64_t mixIn = 0, uint64_t unlockTimestamp = 0);
-  virtual TransactionId deposit(uint64_t term, uint64_t amount, uint64_t fee, uint64_t mixIn = 4) override;
+  virtual TransactionId deposit(uint64_t term, uint64_t amount, uint64_t fee, uint64_t mixIn = 0) override;
   virtual TransactionId withdrawDeposits(const std::vector<DepositId>& depositIds, uint64_t fee) override;
   virtual std::error_code cancelTransaction(size_t transactionId) override;
 

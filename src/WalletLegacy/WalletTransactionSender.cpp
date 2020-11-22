@@ -441,7 +441,7 @@ namespace CryptoNote
       getObjectHash(tx, transaction.hash);
       transaction.secretKey = transactionSK;
 
-      m_transactionsCache.updateTransaction(context->transactionId, tx, totalAmount, context->selectedTransfers);
+      m_transactionsCache.updateTransaction(context->transactionId, tx, totalAmount, context->selectedTransfers, context->tx_key);
 
       notifyBalanceChanged(events);
 
@@ -512,7 +512,6 @@ namespace CryptoNote
       deposit.term = context->depositTerm;
       deposit.creatingTransactionId = context->transactionId;
       deposit.spendingTransactionId = WALLET_LEGACY_INVALID_TRANSACTION_ID;
-      uint32_t height = transactionInfo.blockHeight;
       deposit.interest = m_currency.calculateInterest(deposit.amount, deposit.term);
       deposit.locked = true;
       DepositId depositId = m_transactionsCache.insertDeposit(deposit, depositIndex, transaction->getTransactionHash());
@@ -520,7 +519,7 @@ namespace CryptoNote
       transactionInfo.depositCount = 1;
 
       Transaction lowlevelTransaction = convertTransaction(*transaction, static_cast<size_t>(m_upperTransactionSizeLimit));
-      m_transactionsCache.updateTransaction(context->transactionId, lowlevelTransaction, totalAmount, context->selectedTransfers);
+      m_transactionsCache.updateTransaction(context->transactionId, lowlevelTransaction, totalAmount, context->selectedTransfers, context->tx_key);
       m_transactionsCache.addCreatedDeposit(depositId, deposit.amount + deposit.interest);
 
       notifyBalanceChanged(events);
@@ -917,6 +916,7 @@ namespace CryptoNote
       Deposit deposit;
       bool r = m_transactionsCache.getDeposit(id, deposit);
       assert(r);
+      if (r) {}
 
       foundMoney += deposit.amount + deposit.interest;
     }

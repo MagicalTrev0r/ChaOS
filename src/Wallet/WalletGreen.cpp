@@ -2668,6 +2668,15 @@ namespace CryptoNote
       tx->signInputKey(i++, input.keyInfo, input.ephKeys);
     }
 
+    SecretKey txkey;
+    tx->getTransactionSecretKey(txkey);
+    
+    m_logger(Logging::DEBUGGING) << "Transaction created, hash " << Common::podToHex(tx->getTransactionHash()) <<
+      ", inputs " << m_currency.formatAmount(tx->getInputTotalAmount()) <<
+      ", outputs " << m_currency.formatAmount(tx->getOutputTotalAmount()) <<
+      ", fee " << m_currency.formatAmount(tx->getInputTotalAmount() - tx->getOutputTotalAmount()) <<
+      ", key " << Common::podToHex(txkey);
+
     return tx;
   }
 
@@ -3144,6 +3153,21 @@ namespace CryptoNote
 
     return result;
   }
+
+  Crypto::SecretKey WalletGreen::getTransactionSecretKey(size_t transactionIndex) const
+  {
+    throwIfNotInitialized();
+    throwIfStopped();
+
+    if (m_transactions.size() <= transactionIndex)
+    {
+      m_logger(ERROR, BRIGHT_RED) << "Failed to get transaction: invalid index " << transactionIndex << ". Number of transactions: " << m_transactions.size();
+      throw std::system_error(make_error_code(CryptoNote::error::INDEX_OUT_OF_RANGE));
+    }
+
+    return m_transactions.get<RandomAccessIndex>()[transactionIndex].secretKey.get();
+  }
+
 
   void WalletGreen::start()
   {
