@@ -28,7 +28,7 @@ namespace CryptoNote {
 
     const size_t   DECIMAL_POINT = 5;
     const uint64_t COIN = UINT64_C(100000);
-    const uint64_t MONEY_SUPPLY = UINT64_C(50000000000000);
+    const uint64_t MONEY_SUPPLY = UINT64_C(30000000000000);
 
     const uint64_t MINIMUM_FEE = UINT64_C(100);
     const uint64_t MINIMUM_FEE_BANKING = UINT64_C(100);
