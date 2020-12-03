@@ -1149,6 +1149,7 @@ std::vector<uint32_t> WalletLegacy::getTransactionHeights(const std::vector<Tran
 	  TransactionInformation info;
 	  bool ok = m_transferDetails->getTransactionInformation(hash, info, NULL, NULL);
 	  assert(ok);
+    if (!ok) {}
 	  heights.push_back(info.blockHeight);
   }
   return heights;
@@ -1218,16 +1219,6 @@ void WalletLegacy::pushBalanceUpdatedEvents(std::deque<std::unique_ptr<WalletLeg
   }
 }
 
-Crypto::SecretKey WalletLegacy::getTxKey(Crypto::Hash& txid) {
-  TransactionId ti = m_transactionsCache.findTransactionByHash(txid);
-  WalletLegacyTransaction transaction;
-  getTransaction(ti, transaction);
-  if (transaction.secretKey) {
-     return reinterpret_cast<const Crypto::SecretKey&>(transaction.secretKey.get());
-  } else {
-     return NULL_SECRET_KEY;
-  }
-}
 bool WalletLegacy::get_tx_key(Crypto::Hash& txid, Crypto::SecretKey& txSecretKey) {
   TransactionId ti = m_transactionsCache.findTransactionByHash(txid);
   WalletLegacyTransaction transaction;
@@ -1238,6 +1229,67 @@ bool WalletLegacy::get_tx_key(Crypto::Hash& txid, Crypto::SecretKey& txSecretKey
   }
 
   return true;
+}
+
+Crypto::SecretKey WalletLegacy::getTxKey(Crypto::Hash& txid)
+{
+  TransactionId ti = m_transactionsCache.findTransactionByHash(txid);
+  WalletLegacyTransaction transaction;
+  getTransaction(ti, transaction);
+  if (transaction.secretKey) {
+     return reinterpret_cast<const Crypto::SecretKey&>(transaction.secretKey.get());
+  } else {
+     return NULL_SECRET_KEY;
+  }
+}
+
+bool WalletLegacy::checkTxProof(Crypto::Hash& txid, CryptoNote::AccountPublicAddress& address, std::string& sig_str) {
+  const size_t header_len = strlen("ProofV1");
+  if (sig_str.size() < header_len || sig_str.substr(0, header_len) != "ProofV1")
+  {
+	std::cout << "Signature header check error";
+    return false;
+  }
+  Crypto::PublicKey rA;
+  Crypto::Signature sig;
+  const size_t rA_len = Tools::Base58::encode(std::string((const char *)&rA, sizeof(Crypto::PublicKey))).size();
+  const size_t sig_len = Tools::Base58::encode(std::string((const char *)&sig, sizeof(Crypto::Signature))).size();
+  std::string rA_decoded;
+  std::string sig_decoded;
+  if (!Tools::Base58::decode(sig_str.substr(header_len, rA_len), rA_decoded)) {
+    std::cout << "Signature decoding error";
+	return false;
+  }
+  if (!Tools::Base58::decode(sig_str.substr(header_len + rA_len, sig_len), sig_decoded))
+  {
+    std::cout << "Signature decoding error";
+    return false;
+  }
+  if (sizeof(Crypto::PublicKey) != rA_decoded.size() || sizeof(Crypto::Signature) != sig_decoded.size())
+  {
+    std::cout << "Signature decoding error";
+    return false;
+  }
+  memcpy(&rA, rA_decoded.data(), sizeof(Crypto::PublicKey));
+  memcpy(&sig, sig_decoded.data(), sizeof(Crypto::PublicKey));
+
+  // fetch tx pubkey
+  TransactionId ti = m_transactionsCache.findTransactionByHash(txid);
+  WalletLegacyTransaction tx;
+  if (!getTransaction(ti, tx)) {
+    std::cout << "Transaction with hash " << Common::podToHex(txid) << "is not found";
+	return false;
+  }
+  CryptoNote::TransactionPrefix txp = *reinterpret_cast<const TransactionPrefix*>(&tx);
+  Crypto::PublicKey R = getTransactionPublicKeyFromExtra(txp.extra);
+  if (R == NULL_PUBLIC_KEY)
+  {
+    std::cout << "Tx pubkey was not found";
+    return false;
+  }
+
+  // check signature
+  return Crypto::check_tx_proof(txid, R, address.viewPublicKey, rA, sig);
 }
 
 bool WalletLegacy::getTxProof(Crypto::Hash& txid, CryptoNote::AccountPublicAddress& address, Crypto::SecretKey& tx_key, std::string& sig_str) {

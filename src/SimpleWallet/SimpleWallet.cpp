@@ -354,7 +354,6 @@ bool askAliasesTransfersConfirmation(const std::map<std::string, std::vector<Wal
     std::string answer;
     std::getline(std::cin, answer);
     c = answer[0];
-    std::tolower(c);
   } while (c != 'y' && c != 'n');
 
   return c == 'y';
@@ -417,7 +416,9 @@ simple_wallet::simple_wallet(System::Dispatcher& dispatcher, const CryptoNote::C
   m_consoleHandler.setHandler("incoming_transfers", boost::bind(&simple_wallet::show_incoming_transfers, this, _1), "Show incoming transfers");
   m_consoleHandler.setHandler("list_transfers", boost::bind(&simple_wallet::listTransfers, this, _1), "list_transfers <height> - Show all known transfers from a certain (optional) block height");
   m_consoleHandler.setHandler("payments", boost::bind(&simple_wallet::show_payments, this, _1), "payments <payment_id_1> [<payment_id_2> ... <payment_id_N>] - Show payments <payment_id_1>, ... <payment_id_N>");
+  m_consoleHandler.setHandler("get_tx_key", boost::bind(&simple_wallet::get_tx_key, this, _1), "Get secret transaction key for a given <txid>");
   m_consoleHandler.setHandler("get_tx_proof", boost::bind(&simple_wallet::get_tx_proof, this, _1), "Generate a signature to prove payment: <txid> <address> [<txkey>]");
+  m_consoleHandler.setHandler("check_tx_proof", boost::bind(&simple_wallet::check_tx_proof, this, _1), "Check tx proof for payment going to <address> in <txid>");
   m_consoleHandler.setHandler("bc_height", boost::bind(&simple_wallet::show_blockchain_height, this, _1), "Show blockchain height");
   m_consoleHandler.setHandler("show_dust", boost::bind(&simple_wallet::show_dust, this, _1), "Show the number of unmixable dust outputs");
   m_consoleHandler.setHandler("outputs", boost::bind(&simple_wallet::show_num_unlocked_outputs, this, _1), "Show the number of unlocked outputs available for a transaction");
@@ -975,6 +976,70 @@ bool simple_wallet::get_reserve_proof(const std::vector<std::string> &args)
 	return true;
 }
 
+bool simple_wallet::get_tx_key(const std::vector<std::string> &args)
+{
+  if (args.size() != 1)
+  {
+    fail_msg_writer() << "use: get_tx_key <txid>";
+    return true;
+  }
+  const std::string &str_hash = args[0];
+  Crypto::Hash txid;
+  if (!parse_hash256(str_hash, txid))
+  {
+    fail_msg_writer() << "Failed to parse txid";
+    return true;
+  }
+
+  Crypto::SecretKey tx_key = m_wallet->getTxKey(txid);
+  if (tx_key != NULL_SECRET_KEY)
+  {
+    success_msg_writer() << "Tx key: " << Common::podToHex(tx_key);
+    return true;
+  }
+	else
+  {
+    fail_msg_writer() << "No tx key found for this txid";
+    return true;
+  }
+}
+
+bool simple_wallet::check_tx_proof(const std::vector<std::string> &args) {
+  if (args.size() != 3) {
+    fail_msg_writer() << "usage: check_tx_proof <txid> <address> <signature>";
+	return true;
+  }
+
+  // parse txid
+  const std::string &str_hash = args[0];
+  Crypto::Hash txid;
+  if (!parse_hash256(str_hash, txid)) {
+    fail_msg_writer() << "Failed to parse txid";
+    return true;
+  }
+
+  // parse address
+  const std::string address_string = args[1];
+  CryptoNote::AccountPublicAddress address;
+  if (!m_currency.parseAccountAddressString(address_string, address)) {
+    fail_msg_writer() << "Failed to parse address " << address_string;
+    return true;
+  }
+
+  // parse pubkey r*A & signature
+  std::string sig_str = args[2];
+  if (m_wallet->checkTxProof(txid, address, sig_str)) {
+    success_msg_writer() << "Good signature";
+  }
+  else {
+    fail_msg_writer() << "Bad signature";
+	return true;
+  }
+
+  // TODO: display what's received in tx
+
+  return true;
+}
 
 bool simple_wallet::get_tx_proof(const std::vector<std::string> &args)
 {
@@ -1395,8 +1460,8 @@ bool simple_wallet::optimize_outputs(const std::vector<std::string>& args) {
 
     CryptoNote::WalletLegacyTransaction txInfo;
     m_wallet->getTransaction(tx, txInfo);
-    success_msg_writer(true) << "Money successfully sent, transaction " << Common::podToHex(txInfo.hash);
-    success_msg_writer(true) << "Transaction secret key " << Common::podToHex(transactionSK);
+    success_msg_writer(true) << "Money successfully sent:\n\tTransaction ID: " << Common::podToHex(txInfo.hash);
+    success_msg_writer(true) << "\tTransaction Secret Key: " << Common::podToHex(transactionSK);
 
     try {
       CryptoNote::WalletHelper::storeWallet(*m_wallet, m_wallet_file);

@@ -96,6 +96,7 @@ std::unordered_map<std::string, RpcServer::RpcHandler<RpcServer::HandlerFunction
   { "/feeinfo", { jsonMethod<COMMAND_RPC_GET_FEE_ADDRESS>(&RpcServer::on_get_fee_info), true } }, 
   { "/peers", { jsonMethod<COMMAND_RPC_GET_PEER_LIST>(&RpcServer::on_get_peer_list), true } },
   { "/getpeers", { jsonMethod<COMMAND_RPC_GET_PEER_LIST>(&RpcServer::on_get_peer_list), true } },
+  { "/get_transaction_hashes_by_payment_id", { jsonMethod<COMMAND_RPC_GET_TRANSACTION_HASHES_BY_PAYMENT_ID>(&RpcServer::on_get_transaction_hashes_by_paymentid), true } },
 
   // json rpc
   { "/json_rpc", { std::bind(&RpcServer::processJsonRpcRequest, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), true } }
@@ -142,6 +143,7 @@ bool RpcServer::processJsonRpcRequest(const HttpRequest& request, HttpResponse& 
       { "f_block_json", { makeMemberMethod(&RpcServer::f_on_block_json), false } },
       { "f_transaction_json", { makeMemberMethod(&RpcServer::f_on_transaction_json), false } },
       { "f_on_transactions_pool_json", { makeMemberMethod(&RpcServer::f_on_transactions_pool_json), false } },
+      { "check_tx_key", { makeMemberMethod(&RpcServer::on_check_tx_key), false } },
       { "check_tx_proof", { makeMemberMethod(&RpcServer::k_on_check_tx_proof), false } },
       { "check_reserve_proof", { makeMemberMethod(&RpcServer::k_on_check_reserve_proof), false } },
       { "getblockcount", { makeMemberMethod(&RpcServer::on_getblockcount), true } },
@@ -150,6 +152,7 @@ bool RpcServer::processJsonRpcRequest(const HttpRequest& request, HttpResponse& 
       { "getcurrencyid", { makeMemberMethod(&RpcServer::on_get_currency_id), true } },
       { "submitblock", { makeMemberMethod(&RpcServer::on_submitblock), false } },
       { "getlastblockheader", { makeMemberMethod(&RpcServer::on_get_last_block_header), false } },
+      { "gettransactionhashesbypaymentid", { makeMemberMethod(&RpcServer::on_get_transaction_hashes_by_paymentid), true } },
       { "getblockheaderbyhash", { makeMemberMethod(&RpcServer::on_get_block_header_by_hash), false } },
       { "getblockheaderbyheight", { makeMemberMethod(&RpcServer::on_get_block_header_by_height), false } }
     };
@@ -331,6 +334,88 @@ bool RpcServer::k_on_check_tx_proof(const K_COMMAND_RPC_CHECK_TX_PROOF::request&
 
 	res.status = CORE_RPC_STATUS_OK;
 	return true;
+}
+
+bool RpcServer::on_check_tx_key(const COMMAND_RPC_CHECK_TX_KEY::request& req, COMMAND_RPC_CHECK_TX_KEY::response& res)
+{
+  // parse txid
+  Crypto::Hash txid;
+  if (!parse_hash256(req.txid, txid))
+  {
+    throw JsonRpc::JsonRpcError{ CORE_RPC_ERROR_CODE_WRONG_PARAM, "Failed to parse txid" };
+  }
+
+  // parse address
+  CryptoNote::AccountPublicAddress address;
+  if (!m_core.currency().parseAccountAddressString(req.address, address))
+  {
+    throw JsonRpc::JsonRpcError{ CORE_RPC_ERROR_CODE_WRONG_PARAM, "Failed to parse address " + req.address + '.' };
+  }
+
+  // parse txkey
+  Crypto::Hash tx_key_hash;
+  size_t size;
+  if (!Common::fromHex(req.txkey, &tx_key_hash, sizeof(tx_key_hash), size) || size != sizeof(tx_key_hash))
+  {
+    throw JsonRpc::JsonRpcError{ CORE_RPC_ERROR_CODE_WRONG_PARAM, "Failed to parse txkey" };
+  }
+  Crypto::SecretKey tx_key = *(struct Crypto::SecretKey *) &tx_key_hash;
+
+  // fetch tx
+  Transaction tx;
+  std::vector<Crypto::Hash> tx_ids;
+  tx_ids.push_back(txid);
+  std::list<Crypto::Hash> missed_txs;
+  std::list<Transaction> txs;
+  m_core.getTransactions(tx_ids, txs, missed_txs, true);
+
+  if (1 == txs.size())
+  {
+    tx = txs.front();
+  }
+  else
+  {
+    throw JsonRpc::JsonRpcError{CORE_RPC_ERROR_CODE_WRONG_PARAM, "transaction wasn't found. Hash = " + req.txid + '.' };
+  }
+  CryptoNote::TransactionPrefix transaction = *static_cast<const TransactionPrefix*>(&tx);
+
+  // obtain key derivation
+  Crypto::KeyDerivation derivation;
+  if (!Crypto::generate_key_derivation(address.viewPublicKey, tx_key, derivation))
+  {
+    throw JsonRpc::JsonRpcError{ CORE_RPC_ERROR_CODE_WRONG_PARAM, "Failed to generate key derivation from supplied parameters" };
+  }
+
+  // look for outputs
+  uint64_t received(0);
+  size_t keyIndex(0);
+  std::vector<TransactionOutput> outputs;
+  try
+  {
+    for (const TransactionOutput& o : transaction.outputs)
+    {
+      if (o.target.type() == typeid(KeyOutput))
+      {
+        const KeyOutput out_key = boost::get<KeyOutput>(o.target);
+        Crypto::PublicKey pubkey;
+        derive_public_key(derivation, keyIndex, address.spendPublicKey, pubkey);
+        if (pubkey == out_key.key)
+        {
+          received += o.amount;
+          outputs.push_back(o);
+        }
+      }
+      ++keyIndex;
+    }
+  }
+  catch (...)
+  {
+    throw JsonRpc::JsonRpcError{ CORE_RPC_ERROR_CODE_INTERNAL_ERROR, "Unknown error" };
+  }
+  res.amount = received;
+  res.outputs = outputs;
+  res.status = CORE_RPC_STATUS_OK;
+  return true;
 }
 
 bool RpcServer::k_on_check_reserve_proof(const K_COMMAND_RPC_CHECK_RESERVE_PROOF::request& req, K_COMMAND_RPC_CHECK_RESERVE_PROOF::response& res) {
@@ -586,6 +671,13 @@ bool RpcServer::onGetPoolChangesLite(const COMMAND_RPC_GET_POOL_CHANGES_LITE::re
 
 bool RpcServer::setNodeInfo(const std::string& nodeInfo) {
   m_node_info = nodeInfo;
+  return true;
+}
+
+bool RpcServer::on_get_transaction_hashes_by_paymentid(const COMMAND_RPC_GET_TRANSACTION_HASHES_BY_PAYMENT_ID::request& req, COMMAND_RPC_GET_TRANSACTION_HASHES_BY_PAYMENT_ID::response& rsp) {
+  rsp.transactionHashes = m_core.getTransactionHashesByPaymentId(req.paymentId);
+
+  rsp.status = CORE_RPC_STATUS_OK;
   return true;
 }
 
@@ -925,14 +1017,10 @@ bool RpcServer::f_on_block_json(const F_COMMAND_RPC_GET_BLOCK_DETAILS::request& 
       return false;
     }
   }
+
   uint64_t maxReward = 0;
   uint64_t currentReward = 0;
   int64_t emissionChange = 0;
-  bool penalizeFee = blk.majorVersion >= 2;
-  size_t blockGrantedFullRewardZone = penalizeFee ?
-  m_core.currency().blockGrantedFullRewardZone() :
-  //m_core.currency().blockGrantedFullRewardZoneV1();
-  res.block.effectiveSizeMedian = std::max(res.block.sizeMedian, blockGrantedFullRewardZone);
 
   // virtual bool getBlockReward(size_t medianSize, size_t currentBlockSize, uint64_t alreadyGeneratedCoins, uint64_t fee, uint32_t height,
                               // uint64_t& reward, int64_t& emissionChange) = 0;
