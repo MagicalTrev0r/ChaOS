@@ -428,25 +428,37 @@ bool DaemonCommandsHandler::print_ban(const std::vector<std::string>& args) {
 
 bool DaemonCommandsHandler::ban(const std::vector<std::string>& args)
 {
-  if (args.size() != 1 && args.size() != 2) return false;
+  if (args.size() != 1 && args.size() != 2)
+    return false;
+
   std::string addr = args[0];
   uint32_t ip;
   time_t seconds;
-  if (args.size() > 1) {
-    try {
+
+  if (args.size() > 1)
+  {
+    try
+    {
       seconds = std::stoi(args[1]);
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception &e)
+    {
       return false;
     }
-    if (seconds == 0) {
+    if (seconds == 0)
+    {
       return false;
     }
-  } 
-  try {
-    ip = Common::stringToIpAddress(addr);
-  } catch (const std::exception &e) {
-     return false;
   }
+  try
+  {
+    ip = Common::stringToIpAddress(addr);
+  }
+  catch (const std::exception &e)
+  {
+    return false;
+  }
+
   return m_srv.ban_host(ip, seconds);
 }
 
