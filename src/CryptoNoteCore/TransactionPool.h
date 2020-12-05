@@ -101,6 +101,7 @@ namespace CryptoNote {
     bool fill_block_template(Block &bl, size_t median_size, size_t maxCumulativeSize, uint64_t already_generated_coins, size_t &total_size, uint64_t &fee, uint32_t& height);
 
     void get_transactions(std::list<Transaction>& txs) const;
+    bool getTransaction(const Crypto::Hash& id, Transaction& tx);
     void get_difference(const std::vector<Crypto::Hash>& known_tx_ids, std::vector<Crypto::Hash>& new_tx_ids, std::vector<Crypto::Hash>& deleted_tx_ids) const;
     size_t get_transactions_count() const;
     std::string print_pool(bool short_format) const;
