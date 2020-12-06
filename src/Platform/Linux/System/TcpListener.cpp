@@ -64,7 +64,6 @@ TcpListener::TcpListener(Dispatcher& dispatcher, const Ipv4Address& addr, uint16
 
     int result = close(listener);
     assert(result != -1);
-    if (result) {}
   }
 
   throw std::runtime_error("TcpListener::TcpListener, " + message);
@@ -84,7 +83,6 @@ TcpListener::~TcpListener() {
     assert(context == nullptr);
     int result = close(listener);
     assert(result != -1);
-    if (result) {}
   }
 }
 
@@ -179,7 +177,6 @@ TcpConnection TcpListener::accept() {
 
       int result = close(connection);
       assert(result != -1);
-      if (result) {}
     }
   }
 

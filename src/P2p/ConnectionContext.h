@@ -11,11 +11,8 @@
 #include <unordered_set>
 
 #include <boost/uuid/uuid.hpp>
-#include <boost/optional.hpp>
-
 #include "Common/StringTools.h"
 #include "crypto/hash.h"
-#include "P2p/PendingLiteBlock.h"
 
 namespace CryptoNote {
 
@@ -37,7 +34,6 @@ struct CryptoNoteConnectionContext {
     state_shutdown
   };
 
-  boost::optional<PendingLiteBlock> m_pending_lite_block;
   state m_state = state_befor_handshake;
   std::list<Crypto::Hash> m_needed_objects;
   std::unordered_set<Crypto::Hash> m_requested_objects;

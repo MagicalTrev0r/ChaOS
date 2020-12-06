@@ -103,10 +103,9 @@ core(const Currency& currency, i_cryptonote_protocol* pprotocol, Logging::ILogge
      }
      virtual bool queryBlocks(const std::vector<Crypto::Hash>& block_ids, uint64_t timestamp,
        uint32_t& start_height, uint32_t& current_height, uint32_t& full_offset, std::vector<BlockFullInfo>& entries) override;
-     virtual bool queryBlocksLite(const std::vector<Crypto::Hash>& knownBlockIds, uint64_t timestamp,
+    virtual bool queryBlocksLite(const std::vector<Crypto::Hash>& knownBlockIds, uint64_t timestamp,
       uint32_t& resStartHeight, uint32_t& resCurrentHeight, uint32_t& resFullOffset, std::vector<BlockShortInfo>& entries) override;
-     virtual Crypto::Hash getBlockIdByHeight(uint32_t height) override;
-     virtual bool getTransaction(const Crypto::Hash& id, Transaction& tx, bool checkTxPool = false) override;
+    virtual Crypto::Hash getBlockIdByHeight(uint32_t height) override;
      void getTransactions(const std::vector<Crypto::Hash>& txs_ids, std::list<Transaction>& txs, std::list<Crypto::Hash>& missed_txs, bool checkTxPool = false) override;
      virtual bool getBlockByHash(const Crypto::Hash &h, Block &blk) override;
      virtual bool getBlockHeight(const Crypto::Hash& blockId, uint32_t& blockHeight) override;
@@ -121,7 +120,6 @@ core(const Currency& currency, i_cryptonote_protocol* pprotocol, Logging::ILogge
      void set_checkpoints(Checkpoints&& chk_pts);
      virtual bool isInCheckpointZone(uint32_t height) const override;
 
-     bool getPoolTransaction(const Crypto::Hash& tx_hash, Transaction& transaction) override;
      std::vector<Transaction> getPoolTransactions() override;
      size_t get_pool_transactions_count();
      size_t get_blockchain_total_transactions();
