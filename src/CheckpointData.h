@@ -20,6 +20,6 @@ namespace CryptoNote {
 
   const std::initializer_list<CheckpointData> CHECKPOINTS = {  
     {0,  "f204990ad47bf5cfa8ead24383ebfc99c099bfff446f272cffbc169ab3de1e0d"},
-    {15191,  "8d0d7a9328e8b4f2ba8764a6a9fc9908df5d10c5ea59f3a753861c3589809aa0"}
+    {15191,  "f204990ad47bf5cfa8ead24383ebfc99c099bfff446f272cffbc169ab3de1e0d"}
 	};
 } // namespace CryptoNote
