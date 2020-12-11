@@ -539,7 +539,23 @@ void WalletUserTransactionsCache::updateUnconfirmedTransactions() {
 WalletLegacyTransfer& WalletUserTransactionsCache::getTransfer(TransferId transferId) {
   return m_transfers.at(transferId);
 }
-  
+
+bool WalletUserTransactionsCache::getTransactionByHash(const Crypto::Hash& hash, WalletLegacyTransaction& transaction) const
+{
+  TransactionId id = CryptoNote::WALLET_LEGACY_INVALID_TRANSACTION_ID;
+  auto it = std::find_if(m_transactions.begin(), m_transactions.end(), [&hash](const WalletLegacyTransaction& tx) { return tx.hash == hash; });
+
+  if (it == m_transactions.end())
+    return CryptoNote::WALLET_LEGACY_INVALID_TRANSACTION_ID;
+
+  id = std::distance(m_transactions.begin(), it);
+
+  if (id == CryptoNote::WALLET_LEGACY_INVALID_TRANSACTION_ID)
+    return false;
+
+  return getTransaction(id, transaction);
+}
+
 void WalletUserTransactionsCache::reset() {
   m_transactions.clear();
   m_transfers.clear();
