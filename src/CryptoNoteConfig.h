@@ -17,9 +17,8 @@ namespace CryptoNote {
     const uint64_t MAX_BLOCK_NUMBER = 500000000;
     const size_t   MAX_BLOCK_BLOB_SIZE = 500000000;
     const size_t   MAX_TX_SIZE = 1000000000;
-    const size_t   MAX_SAFE_TX_SIZE = 115000;
 
-    /* cxche address prefix */
+    /* cxche address prefix - 43810262 */
     const uint64_t PUBLIC_ADDRESS_BASE58_PREFIX = 0x29c7dd6;
 
     /* 20 minutes */
