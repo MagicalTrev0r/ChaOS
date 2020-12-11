@@ -2,7 +2,7 @@
 > Privacy Focused Decentralised Banking.
 
 ![status](https://img.shields.io/badge/Status-Mainnet-green)
-![version](https://img.shields.io/badge/Version-1.0.3-blue)
+![version](https://img.shields.io/badge/Version-1.0.2-blue)
 
 [![discord](https://github.com/project-en4orcer/Assets/blob/master/social-icons/bubble/discord-50px.png)](https://discord.gg/PHyGJjg)
 [![github](https://github.com/project-en4orcer/Assets/blob/master/social-icons/bubble/github-50px.png)](https://github.com/cache-core)

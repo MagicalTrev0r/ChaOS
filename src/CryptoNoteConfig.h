@@ -119,7 +119,7 @@ namespace CryptoNote {
   const int      P2P_DEFAULT_PORT = 38999;
   const int      RPC_DEFAULT_PORT = 39000;
 
-  const uint8_t  P2P_CURRENT_VERSION = 2;
+  const uint8_t  P2P_CURRENT_VERSION = 1;
   const uint8_t  P2P_MINIMUM_VERSION = 1;
 
   const uint8_t  TRANSACTION_VERSION_1 = 1;
