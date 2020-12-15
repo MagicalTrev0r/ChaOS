@@ -119,6 +119,7 @@ public:
   void clearCacheAndShutdown();
   void updateInternalCache();
   size_t getTxSize(const TransactionParameters &sendingTransaction);
+  size_t getMaxTxSize();
   bool txIsTooLarge(const TransactionParameters& sendingTransaction);
 
 protected:
@@ -411,7 +412,6 @@ protected:
   uint64_t m_lockedDepositBalance;
   uint64_t m_unlockedDepositBalance;
 
-  uint64_t m_upperTransactionSizeLimit;
   uint32_t m_transactionSoftLockTime;
 
   BlockHashesContainer m_blockchain;

@@ -513,6 +513,13 @@ bool WalletLegacy::getTransaction(TransactionId transactionId, WalletLegacyTrans
   return m_transactionsCache.getTransaction(transactionId, transaction);
 }
 
+bool WalletLegacy::getTransactionByHash(const Crypto::Hash& hash, WalletLegacyTransaction& transaction) {
+  std::unique_lock<std::mutex> lock(m_cacheMutex);
+  throwIfNotInitialised();
+
+  return m_transactionsCache.getTransactionByHash(hash, transaction); 
+}
+
 bool WalletLegacy::getTransfer(TransferId transferId, WalletLegacyTransfer& transfer) {
   std::unique_lock<std::mutex> lock(m_cacheMutex);
   throwIfNotInitialised();

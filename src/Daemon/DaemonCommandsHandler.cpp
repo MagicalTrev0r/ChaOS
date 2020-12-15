@@ -308,6 +308,7 @@ bool DaemonCommandsHandler::print_stat(const std::vector<std::string>& args) {
   uint64_t totalCoinsInNetwork = m_core.coinsEmittedAtHeight(height);
   uint64_t totalCoinsOnDeposits = m_core.depositAmountAtHeight(height);
   uint64_t amountOfActiveCoins = totalCoinsInNetwork - totalCoinsOnDeposits;
+  uint64_t amountOfCoins = CryptoNote::parameters::MONEY_SUPPLY;
 
   std::time_t uptime = std::time(nullptr) - m_core.getStartTime();
   uint32_t secs = (unsigned int)fmod(uptime, 60.0);
@@ -322,7 +323,8 @@ bool DaemonCommandsHandler::print_stat(const std::vector<std::string>& args) {
     << "Sync Status: " << (synced ? "synced " : "syncing ") << "(" << get_sync_percentage(height, last_known_block_index) << "%)" << std::endl
     << "Hashrate: " << get_mining_speed(hashrate) << std::endl
     << "Block Difficulty: " << m_core.difficultyAtHeight(height) << std::endl
-    << "Total coins in network: " << currency.formatAmount(totalCoinsInNetwork) << std::endl
+    << "Total coins in network: " << currency.formatAmount(totalCoinsInNetwork)
+    << " (" << currency.formatAmount(calculatePercent(currency, totalCoinsInNetwork, amountOfCoins)) << "%)" << std::endl
     << "Total coins banked: " << currency.formatAmount(totalCoinsOnDeposits)
     << " (" << currency.formatAmount(calculatePercent(currency, totalCoinsOnDeposits, totalCoinsInNetwork)) << "%)" << std::endl
     << "Amount of active coins: " << currency.formatAmount(amountOfActiveCoins)

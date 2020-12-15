@@ -89,6 +89,7 @@ public:
   WalletLegacyTransaction& getTransaction(TransactionId transactionId);
   bool getTransfer(TransferId transferId, WalletLegacyTransfer& transfer) const;
   WalletLegacyTransfer& getTransfer(TransferId transferId);
+  bool getTransactionByHash(const Crypto::Hash& hash, WalletLegacyTransaction& transaction) const;
   TransactionId findTransactionByHash(const Crypto::Hash& hash);
   bool getDeposit(DepositId depositId, Deposit& deposit) const;
   Deposit& getDeposit(DepositId depositId);

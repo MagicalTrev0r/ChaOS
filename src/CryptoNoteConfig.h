@@ -17,9 +17,8 @@ namespace CryptoNote {
     const uint64_t MAX_BLOCK_NUMBER = 500000000;
     const size_t   MAX_BLOCK_BLOB_SIZE = 500000000;
     const size_t   MAX_TX_SIZE = 1000000000;
-    const size_t   MAX_SAFE_TX_SIZE = 115000;
 
-    /* cxche address prefix */
+    /* cxche address prefix - 43810262 */
     const uint64_t PUBLIC_ADDRESS_BASE58_PREFIX = 0x29c7dd6;
 
     /* 20 minutes */
@@ -28,7 +27,7 @@ namespace CryptoNote {
 
     const size_t   DECIMAL_POINT = 5;
     const uint64_t COIN = UINT64_C(100000);
-    const uint64_t MONEY_SUPPLY = UINT64_C(50000000000000);
+    const uint64_t MONEY_SUPPLY = UINT64_C(30000000000000);
 
     const uint64_t MINIMUM_FEE = UINT64_C(100);
     const uint64_t MINIMUM_FEE_BANKING = UINT64_C(100);
