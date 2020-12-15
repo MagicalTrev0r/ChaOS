@@ -16,6 +16,7 @@
 #include "IWalletLegacy.h"
 #include "Common/PasswordContainer.h"
 #include "TransferCommand.h"
+#include "DepositCommand.h"
 
 #include "Common/ConsoleHandler.h"
 #include "CryptoNoteCore/CryptoNoteBasicImpl.h"
@@ -74,6 +75,12 @@ namespace CryptoNote
     bool ask_wallet_create_if_needed();
     bool is_valid_mnemonic(std::string &, Crypto::SecretKey &);
     bool confirmTransaction(TransferCommand, bool);
+
+    /* Banking */
+    bool createDeposit(const std::vector<std::string> &args);
+    bool confirmDeposit(DepositCommand);
+    bool getDepositCount(const std::vector<std::string> &args);
+    bool withdrawDeposit(const std::vector<std::string> &args);
 
     bool help(const std::vector<std::string> &args = std::vector<std::string>());
     bool exit(const std::vector<std::string> &args);
@@ -185,5 +192,7 @@ namespace CryptoNote
     bool m_walletSynchronized;
     std::mutex m_walletSynchronizedMutex;
     std::condition_variable m_walletSynchronizedCV;
+
+    std::atomic<CryptoNote::TransactionId> m_depositId;
   };
 }

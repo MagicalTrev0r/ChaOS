@@ -434,6 +434,9 @@ simple_wallet::simple_wallet(System::Dispatcher& dispatcher, const CryptoNote::C
   m_consoleHandler.setHandler("help", boost::bind(&simple_wallet::help, this, _1), "Show this help");
   m_consoleHandler.setHandler("get_reserve_proof", boost::bind(&simple_wallet::get_reserve_proof, this, _1), "all|<amount> [<message>] - Generate a signature proving that you own at least <amount>, optionally with a challenge string <message>. ");
   m_consoleHandler.setHandler("exit", boost::bind(&simple_wallet::exit, this, _1), "Close wallet");
+  m_consoleHandler.setHandler("deposit", boost::bind(&simple_wallet::createDeposit, this, _1), "Create a deposit on the Blockchain. \"deposit [months] [amount]\"");
+  m_consoleHandler.setHandler("withdraw_deposit", boost::bind(&simple_wallet::withdrawDeposit, this, _1), "Withdraw an unlocked deposit from the Blockchain.");
+  m_consoleHandler.setHandler("deposit_count", boost::bind(&simple_wallet::getDepositCount, this, _1), "Amount of deposits in current wallet.");
 }
 
 /* This function shows the number of outputs in the wallet
@@ -1227,7 +1230,6 @@ bool simple_wallet::create_integrated(const std::vector<std::string>& args/* = s
   /* check if there is a payment id */
   if (args.empty()) 
   {
-
     fail_msg_writer() << "Please enter a payment ID";
     return true;
   }
@@ -1656,6 +1658,164 @@ bool simple_wallet::confirmTransaction(TransferCommand cmd, bool multiAddress) {
 
   /* Because the compiler is dumb */
   return false;
+}
+
+bool simple_wallet::confirmDeposit(DepositCommand dcmd) {
+  std::string feeString;
+  std::string walletName = boost::filesystem::change_extension(m_wallet_file, "").string();
+  feeString = m_currency.formatAmount(dcmd.fee) + " $CXCHE";
+
+  std::cout << std::endl << "==[ Confirm Deposit ]==" << std::endl; 
+  
+  /* define month from months */
+  if (dcmd.term == 1) {
+    std::cout << "You are depositing " << m_currency.formatAmount(dcmd.amount) << " for " << dcmd.term << " month." << std::endl;
+  } else if (dcmd.term > 1) {
+    std::cout << "You are depositing " << m_currency.formatAmount(dcmd.amount) << " for " << dcmd.term << " months." << std::endl;
+  }
+
+  while (true) {
+    std::cout << "Is this correct? (Y/N): ";
+
+    char c;
+    std::cin >> c;
+    c = std::tolower(c);
+
+    if (c == 'y') {
+      if (!m_pwd_container.read_and_validate()) {
+        std::cout << "Incorrect password!" << std::endl;
+        continue;
+      }
+      return true;
+    } else if (c == 'n') {
+      return false;
+    } else {
+      std::cout << "Bad input, please enter either Y or N." << std::endl;
+    }
+  }
+
+  /* Because the compiler is dumb */
+  return false;
+}
+
+bool simple_wallet::createDeposit(const std::vector<std::string> &args) {
+  try {
+    DepositCommand dcmd(m_currency);
+
+    if (!dcmd.parseArguments(logger, args))
+      return true;
+
+    CryptoNote::WalletHelper::SendCompleteResultObserver sent;
+    WalletHelper::IWalletRemoveObserverGuard removeGuard(*m_wallet, sent);
+
+    bool proceed = confirmDeposit(dcmd);
+
+    if (!proceed) {
+      std::cout << "Cancelling transaction." << std::endl;
+      return true;
+    }
+
+    /* set static mixin of 0 for deposits */
+    dcmd.mixin = CryptoNote::parameters::MINIMUM_MIXIN;
+
+    /* force minimum fee */
+    if (dcmd.fee < CryptoNote::parameters::MINIMUM_FEE) {
+      dcmd.fee = CryptoNote::parameters::MINIMUM_FEE;
+    }
+
+    uint32_t blocks_per_month = 21900;
+    uint64_t depositTerm = dcmd.term * blocks_per_month;
+
+    m_depositId = m_wallet->deposit(depositTerm, dcmd.amount, dcmd.fee, dcmd.mixin);
+    if (m_depositId == WALLET_LEGACY_INVALID_TRANSACTION_ID) {
+      fail_msg_writer() << "Can't send money";
+      return true;
+    }
+
+    std::error_code sendError = sent.wait(m_depositId);
+    removeGuard.removeObserver();
+
+    if (sendError) {
+      fail_msg_writer() << sendError.message();
+      return true;
+    }
+
+    CryptoNote::WalletLegacyTransaction txInfo;
+    m_wallet->getTransaction(m_depositId, txInfo);
+    std::cout << "Deposit has been created! ID:" << std::endl
+              << Common::podToHex(txInfo.hash) << std::endl;
+
+    try {
+      CryptoNote::WalletHelper::storeWallet(*m_wallet, m_wallet_file);
+    } catch (const std::exception& e) {
+      fail_msg_writer() << e.what();
+      return true;
+    }
+  } catch (const std::system_error& e) {
+    fail_msg_writer() << e.what();
+  } catch (const std::exception& e) {
+    fail_msg_writer() << e.what();
+  } catch (...) {
+    fail_msg_writer() << "unknown error";
+  }
+
+  return true;
+}
+
+bool simple_wallet::getDepositCount(const std::vector<std::string> &args) {
+  uint64_t depositCount = m_wallet->getDepositCount();
+  if (depositCount == 0) {
+    std::cout << "No deposits are currently in the wallet. Deposit Count: 0" << std::endl;
+    return false;
+  } else if (depositCount >= 1) {
+    std::cout << "Deposit Count: " << depositCount << std::endl;
+  }
+  return true;
+}
+
+bool simple_wallet::withdrawDeposit(const std::vector<std::string> &args) {
+  try {
+    DepositCommand dcmd(m_currency);
+    if (!dcmd.pAwithdrawDeposit(logger, args))
+      return false;
+    if (m_wallet->getDepositCount() == 0)
+      return false;
+
+    CryptoNote::WalletHelper::SendCompleteResultObserver sent;
+    WalletHelper::IWalletRemoveObserverGuard removeGuard(*m_wallet, sent);
+
+    m_depositId = m_wallet->withdrawDeposits(dcmd.dId, CryptoNote::parameters::MINIMUM_FEE);
+    if (m_depositId == WALLET_LEGACY_INVALID_TRANSACTION_ID) {
+      fail_msg_writer() << "Can't withdraw deposit.";
+      return true;
+    }
+
+    std::cout << "Withdrawing deposit " << Common::podToHex(dcmd.dId) << " from the blockchain." << std::endl;
+
+    std::error_code sendError = sent.wait(m_depositId);
+    removeGuard.removeObserver();
+
+    if (sendError) {
+      fail_msg_writer() << sendError.message();
+      return true;
+    }
+
+    CryptoNote::WalletLegacyTransaction txInfo;
+    m_wallet->getTransaction(m_depositId, txInfo);
+    std::cout << "Withdrawn deposit has been confirmed! ID:" << std::endl
+              << Common::podToHex(txInfo.hash) << std::endl;
+
+    try {
+      CryptoNote::WalletHelper::storeWallet(*m_wallet, m_wallet_file);
+    } catch (const std::exception& e) {
+      fail_msg_writer() << e.what();
+      return true;
+    }
+  } catch (const std::system_error& e) {
+    fail_msg_writer() << e.what();
+  }
+
+  return true;
 }
 
 bool simple_wallet::transfer(const std::vector<std::string> &args) {
