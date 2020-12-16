@@ -1660,7 +1660,7 @@ bool simple_wallet::confirmTransaction(TransferCommand cmd, bool multiAddress) {
   return false;
 }
 
-bool simple_wallet::confirmDeposit(DepositCommand dcmd) {
+bool simple_wallet::confirmDeposit(TransferCommand dcmd) {
   std::string feeString;
   std::string walletName = boost::filesystem::change_extension(m_wallet_file, "").string();
   feeString = m_currency.formatAmount(dcmd.fee) + " $CXCHE";
@@ -1700,9 +1700,9 @@ bool simple_wallet::confirmDeposit(DepositCommand dcmd) {
 
 bool simple_wallet::createDeposit(const std::vector<std::string> &args) {
   try {
-    DepositCommand dcmd(m_currency);
+    TransferCommand dcmd(m_currency);
 
-    if (!dcmd.parseArguments(logger, args))
+    if (!dcmd.parseCreateDeposit(logger, args))
       return true;
 
     CryptoNote::WalletHelper::SendCompleteResultObserver sent;
@@ -1775,8 +1775,8 @@ bool simple_wallet::getDepositCount(const std::vector<std::string> &args) {
 
 bool simple_wallet::withdrawDeposit(const std::vector<std::string> &args) {
   try {
-    DepositCommand dcmd(m_currency);
-    if (!dcmd.pAwithdrawDeposit(logger, args))
+    TransferCommand dcmd(m_currency);
+    if (!dcmd.parseWithdrawDeposit(logger, args))
       return false;
     if (m_wallet->getDepositCount() == 0)
       return false;
@@ -1822,7 +1822,7 @@ bool simple_wallet::transfer(const std::vector<std::string> &args) {
   try {
     TransferCommand cmd(m_currency);
 
-    if (!cmd.parseArguments(logger, args))
+    if (!cmd.parseTransfer(logger, args))
       return true;
 
     for (auto& kv: cmd.aliases) {
@@ -1927,7 +1927,6 @@ bool simple_wallet::transfer(const std::vector<std::string> &args) {
 
   return true;
 }
-//----------------------------------------------------------------------------------------------------
 bool simple_wallet::run() {
   {
     std::unique_lock<std::mutex> lock(m_walletSynchronizedMutex);

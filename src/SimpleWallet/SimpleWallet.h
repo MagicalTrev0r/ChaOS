@@ -16,7 +16,6 @@
 #include "IWalletLegacy.h"
 #include "Common/PasswordContainer.h"
 #include "TransferCommand.h"
-#include "DepositCommand.h"
 
 #include "Common/ConsoleHandler.h"
 #include "CryptoNoteCore/CryptoNoteBasicImpl.h"
@@ -76,12 +75,6 @@ namespace CryptoNote
     bool is_valid_mnemonic(std::string &, Crypto::SecretKey &);
     bool confirmTransaction(TransferCommand, bool);
 
-    /* Banking */
-    bool createDeposit(const std::vector<std::string> &args);
-    bool confirmDeposit(DepositCommand);
-    bool getDepositCount(const std::vector<std::string> &args);
-    bool withdrawDeposit(const std::vector<std::string> &args);
-
     bool help(const std::vector<std::string> &args = std::vector<std::string>());
     bool exit(const std::vector<std::string> &args);
     bool show_dust(const std::vector<std::string> &args);
@@ -111,6 +104,13 @@ namespace CryptoNote
     void printConnectionError() const;
 
     std::string generate_mnemonic(Crypto::SecretKey &);
+
+    /* Banking */
+    bool createDeposit(const std::vector<std::string> &args);
+    bool confirmDeposit(TransferCommand);
+    bool getDepositCount(const std::vector<std::string> &args);
+    /* withdrawDeposit() needs testing with a wallet with a matured deposit */
+    bool withdrawDeposit(const std::vector<std::string> &args);
 
     //---------------- IWalletLegacyObserver -------------------------
     virtual void initCompleted(std::error_code result) override;
@@ -194,5 +194,6 @@ namespace CryptoNote
     std::condition_variable m_walletSynchronizedCV;
 
     std::atomic<CryptoNote::TransactionId> m_depositId;
+    std::atomic<CryptoNote::TransactionId> m_sentMessageId;
   };
 }
