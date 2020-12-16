@@ -105,6 +105,13 @@ namespace CryptoNote
 
     std::string generate_mnemonic(Crypto::SecretKey &);
 
+    /* Banking */
+    bool createDeposit(const std::vector<std::string> &args);
+    bool confirmDeposit(TransferCommand);
+    bool getDepositCount(const std::vector<std::string> &args);
+    /* withdrawDeposit() needs testing with a wallet with a matured deposit */
+    bool withdrawDeposit(const std::vector<std::string> &args);
+
     //---------------- IWalletLegacyObserver -------------------------
     virtual void initCompleted(std::error_code result) override;
     virtual void externalTransactionCreated(CryptoNote::TransactionId transactionId) override;
@@ -185,5 +192,8 @@ namespace CryptoNote
     bool m_walletSynchronized;
     std::mutex m_walletSynchronizedMutex;
     std::condition_variable m_walletSynchronizedCV;
+
+    std::atomic<CryptoNote::TransactionId> m_depositId;
+    std::atomic<CryptoNote::TransactionId> m_sentMessageId;
   };
 }

@@ -301,7 +301,7 @@ namespace CryptoNote
     context->dustPolicy.dustThreshold = m_currency.defaultDustThreshold();
 
     context->foundMoney = selectDepositTransfers(depositIds, context->selectedTransfers);
-    throwIf(context->foundMoney < fee, error::WRONG_AMOUNT);
+    throwIf(context->foundMoney < fee, error::MAYBE_DEPOSIT_NOT_READY);
 
     transactionId = m_transactionsCache.addNewTransaction(context->foundMoney, fee, std::string(), {}, 0, {});
     context->transactionId = transactionId;
