@@ -113,6 +113,10 @@ bool core::rollback_chain_to(uint32_t height) {
   return m_blockchain.rollbackBlockchainTo(height);
 }
 
+bool core::saveBlockchain() {
+  return m_blockchain.storeCache();
+}
+
 bool core::get_blocks(uint32_t start_offset, uint32_t count, std::list<Block>& blocks, std::list<Transaction>& txs) {
   return m_blockchain.getBlocks(start_offset, count, blocks, txs);
 }
