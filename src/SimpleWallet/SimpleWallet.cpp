@@ -424,9 +424,6 @@ simple_wallet::simple_wallet(System::Dispatcher& dispatcher, const CryptoNote::C
   m_consoleHandler.setHandler("outputs", boost::bind(&simple_wallet::show_num_unlocked_outputs, this, _1), "Show the number of unlocked outputs available for a transaction");
   m_consoleHandler.setHandler("optimize", boost::bind(&simple_wallet::optimize_outputs, this, _1), "Combine many available outputs into a few by sending a transaction to self");
   m_consoleHandler.setHandler("optimize_all", boost::bind(&simple_wallet::optimize_all_outputs, this, _1), "Optimize your wallet several times so you can send large transactions");  
-  m_consoleHandler.setHandler("transfer", boost::bind(&simple_wallet::transfer, this, _1),
-    "transfer <addr_1> <amount_1> [<addr_2> <amount_2> ... <addr_N> <amount_N>] [-p payment_id]"
-    " - Transfer <amount_1>,... <amount_N> to <address_1>,... <address_N>, respectively. ");
   m_consoleHandler.setHandler("set_log", boost::bind(&simple_wallet::set_log, this, _1), "set_log <level> - Change current log level, <level> is a number 0-4");
   m_consoleHandler.setHandler("address", boost::bind(&simple_wallet::print_address, this, _1), "Show current wallet public address");
   m_consoleHandler.setHandler("save", boost::bind(&simple_wallet::save, this, _1), "Save wallet synchronized data");
@@ -434,8 +431,9 @@ simple_wallet::simple_wallet(System::Dispatcher& dispatcher, const CryptoNote::C
   m_consoleHandler.setHandler("help", boost::bind(&simple_wallet::help, this, _1), "Show this help");
   m_consoleHandler.setHandler("get_reserve_proof", boost::bind(&simple_wallet::get_reserve_proof, this, _1), "all|<amount> [<message>] - Generate a signature proving that you own at least <amount>, optionally with a challenge string <message>. ");
   m_consoleHandler.setHandler("exit", boost::bind(&simple_wallet::exit, this, _1), "Close wallet");
+  m_consoleHandler.setHandler("transfer", boost::bind(&simple_wallet::transfer, this, _1), "transfer [mixin] [address] [amount] [-p payment_id] [-f fee]");
   m_consoleHandler.setHandler("deposit", boost::bind(&simple_wallet::createDeposit, this, _1), "Create a deposit on the Blockchain. \"deposit [months] [amount]\"");
-  m_consoleHandler.setHandler("withdraw_deposit", boost::bind(&simple_wallet::withdrawDeposit, this, _1), "Withdraw an unlocked deposit from the Blockchain.");
+  //m_consoleHandler.setHandler("withdraw_deposit", boost::bind(&simple_wallet::withdrawDeposit, this, _1), "Withdraw an unlocked deposit from the Blockchain.");
   m_consoleHandler.setHandler("deposit_count", boost::bind(&simple_wallet::getDepositCount, this, _1), "Amount of deposits in current wallet.");
 }
 
