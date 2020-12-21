@@ -1,3 +1,8 @@
+// Copyright (c) 2020 - The Cache Developers
+//
+// Distributed under the GNU Lesser General Public License v3.0.
+// Please read Cache/License.md
+
 #pragma once
 
 #include "CryptoNoteCore/Currency.h"
@@ -21,10 +26,21 @@ namespace CryptoNote
       std::map<std::string, std::vector<WalletLegacyTransfer>> aliases;
       std::vector<std::string> messages;
       uint64_t ttl;
+      
+      /* deposit */
+      uint64_t mixin;
+      uint64_t amount;
+      uint64_t term;
+
+      /* withdraw */
+      std::vector<DepositId> dId;
 
       TransferCommand(const CryptoNote::Currency& currency);
 
-      bool parseArguments(LoggerRef& logger, const std::vector<std::string> &args);
+      bool parseTransfer(LoggerRef& logger, const std::vector<std::string> &args);
+      
+      bool parseCreateDeposit(LoggerRef& logger, const std::vector<std::string> &args);
+      bool parseWithdrawDeposit(LoggerRef& logger, const std::vector<std::string> &args);
   };
 
   template <typename IterT, typename ValueT = typename IterT::value_type>

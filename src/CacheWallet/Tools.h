@@ -1,3 +1,9 @@
+// Copyright (c) 2018-2020 - The TurtleCoin Developers
+// Copyright (c) 2020 - The Cache Developers
+//
+// Distributed under the GNU Lesser General Public License v3.0.
+// Please read Cache/License.md
+
 #include <cctype>
 #include <fstream>
 #include <iostream>

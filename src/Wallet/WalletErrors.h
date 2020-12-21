@@ -51,6 +51,7 @@ enum WalletErrorCodes {
   DEPOSIT_AMOUNT_TOO_SMALL,
   DEPOSIT_DOESNOT_EXIST,
   DEPOSIT_LOCKED,
+  MAYBE_DEPOSIT_NOT_READY,
   DESTINATION_ADDRESS_REQUIRED,
   DESTINATION_ADDRESS_NOT_FOUND,
   DAEMON_NOT_SYNCED
@@ -84,6 +85,7 @@ public:
     case BAD_INTEGRATED_ADDRESS:   return "Integrated address should be 186 characters";    
     case TRANSACTION_SIZE_TOO_BIG: return "Transaction size is too big, please optimize your wallet.";
     case WRONG_AMOUNT:             return "Insufficient funds";
+    case MAYBE_DEPOSIT_NOT_READY:  return "Insufficient funds OR Deposit is not ready to be withdrawn.";
     case BAD_PREFIX:               return "Address has incorrect prefix";    
     case SUM_OVERFLOW:             return "Sum overflow";
     case ZERO_DESTINATION:         return "The destination is empty";
