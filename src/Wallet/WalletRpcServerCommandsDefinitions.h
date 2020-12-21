@@ -229,13 +229,43 @@ using CryptoNote::ISerializer;
   };
 
   struct COMMAND_RPC_GET_TRANSFERS {
-    typedef CryptoNote::EMPTY_STRUCT request;
+    struct request
+    {
+      bool filter_by_height;
+      uint64_t min_height;
+      uint64_t max_height;
+
+      void serialize(ISerializer& s) {
+        KV_MEMBER(filter_by_height);
+        KV_MEMBER(min_height);
+        KV_MEMBER(max_height);
+      }
+    };
 
     struct response {
       std::list<Transfer> transfers;
 
       void serialize(ISerializer& s) {
         KV_MEMBER(transfers)
+      }
+    };
+  };
+
+  struct COMMAND_RPC_GET_TRANSFER_BY_TXID {
+    struct request
+    {
+      std::string txid;
+
+      void serialize(ISerializer& s) {
+        KV_MEMBER(txid);
+      }
+    };
+
+    struct response {
+      Transfer transfer;
+
+      void serialize(ISerializer& s) {
+        KV_MEMBER(transfer)
       }
     };
   };
@@ -383,6 +413,30 @@ using CryptoNote::ISerializer;
       void serialize(ISerializer& s)
       {
         KV_MEMBER(tx_hash)
+      }
+    };
+  };
+  
+	/* Command: get_tx_key */
+  struct COMMAND_RPC_GET_TX_KEY
+  {
+    struct request
+    {
+      std::string tx_hash;
+
+      void serialize(ISerializer& s)
+      {
+        KV_MEMBER(tx_hash)
+      }
+    };
+
+    struct response
+    {
+      std::string tx_key;
+
+      void serialize(ISerializer& s)
+      {
+        KV_MEMBER(tx_key)
       }
     };
   };

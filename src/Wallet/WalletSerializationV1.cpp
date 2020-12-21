@@ -10,15 +10,19 @@
 #include <sstream>
 #include <type_traits>
 #include <boost/optional.hpp>
+
+#include "crypto/crypto.h"
 #include "Common/MemoryInputStream.h"
 #include "Common/StdInputStream.h"
 #include "Common/StdOutputStream.h"
+#include "CryptoNoteCore/CryptoNoteBasic.h"
 #include "CryptoNoteCore/CryptoNoteSerialization.h"
 #include "CryptoNoteCore/CryptoNoteTools.h"
 
 #include "Serialization/BinaryOutputStreamSerializer.h"
 #include "Serialization/BinaryInputStreamSerializer.h"
 #include "Serialization/SerializationOverloads.h"
+#include "WalletLegacy/WalletLegacySerializer.h"
 
 #include "Wallet/WalletErrors.h"
 #include "WalletLegacy/KeysStorage.h"
@@ -26,6 +30,7 @@
 
 using namespace Common;
 using namespace Crypto;
+using namespace CryptoNote;
 
 namespace {
 
@@ -74,6 +79,8 @@ struct WalletTransactionDto {
     creationTime = wallet.creationTime;
     unlockTime = wallet.unlockTime;
     extra = wallet.extra;
+    if (wallet.secretKey)
+      secretKey = reinterpret_cast<const Crypto::SecretKey&>(wallet.secretKey.get());
   }
 
   CryptoNote::WalletTransactionState state;
@@ -145,6 +152,8 @@ void serialize(WalletTransactionDto& value, CryptoNote::ISerializer& serializer)
   serializer(value.creationTime, "creation_time");
   serializer(value.unlockTime, "unlock_time");
   serializer(value.extra, "extra");
+  if (value.secretKey)
+    serializer(value.secretKey.get(), "secret_key");
 }
 
 void serialize(WalletTransferDto& value, CryptoNote::ISerializer& serializer) {
@@ -246,6 +255,8 @@ CryptoNote::WalletTransaction convert(const CryptoNote::WalletLegacyTransaction&
   mtx.unlockTime = tx.unlockTime;
   mtx.extra = tx.extra;
   mtx.isBase = tx.isCoinbase;
+  if(tx.secretKey)
+    mtx.secretKey = reinterpret_cast<const Crypto::SecretKey&>(tx.secretKey.get());
 
   return mtx;
 }
@@ -665,7 +676,7 @@ void WalletSerializer::loadWallets(Common::IInputStream& source, CryptoContext& 
   deserializeEncrypted(count, "wallets_count", cryptoContext, source);
   cryptoContext.incIv();
 
-  bool isTrackingMode;
+  bool isTrackingMode = false;
 
   for (uint64_t i = 0; i < count; ++i) {
     WalletRecordDto dto;
@@ -721,6 +732,7 @@ void WalletSerializer::subscribeWallets() {
     auto& subscription = m_synchronizer.addSubscription(sub);
     bool r = index.modify(it, [&subscription] (WalletRecord& rec) { rec.container = &subscription.getContainer(); });
     assert(r);
+    if (r) {}
 
     subscription.addObserver(&m_transfersObserver);
   }
@@ -869,6 +881,8 @@ void WalletSerializer::loadTransactions(Common::IInputStream& source, CryptoCont
     tx.unlockTime = dto.unlockTime;
     tx.extra = dto.extra;
     tx.isBase = false;
+    if (dto.secretKey)
+      tx.secretKey = reinterpret_cast<const Crypto::SecretKey&>(dto.secretKey.get());
 
     m_transactions.get<RandomAccessIndex>().push_back(std::move(tx));
   }

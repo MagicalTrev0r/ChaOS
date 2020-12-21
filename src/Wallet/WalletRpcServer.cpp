@@ -121,8 +121,10 @@ void wallet_rpc_server::processRequest(const CryptoNote::HttpRequest& request, C
       { "get_messages", makeMemberMethod(&wallet_rpc_server::on_get_messages) },
       { "get_payments", makeMemberMethod(&wallet_rpc_server::on_get_payments) },
       { "get_transfers", makeMemberMethod(&wallet_rpc_server::on_get_transfers) },
+      { "get_transfer_by_txid", makeMemberMethod(&wallet_rpc_server::on_get_transfer_by_txid) },
       { "get_height", makeMemberMethod(&wallet_rpc_server::on_get_height) },
       { "get_outputs", makeMemberMethod(&wallet_rpc_server::on_get_outputs) },
+      { "get_tx_key", makeMemberMethod(&wallet_rpc_server::on_get_tx_key) },
       { "get_tx_proof"     , makeMemberMethod(&wallet_rpc_server::on_get_tx_proof)      },
       { "get_reserve_proof", makeMemberMethod(&wallet_rpc_server::on_get_reserve_proof) },      
       { "optimize", makeMemberMethod(&wallet_rpc_server::on_optimize) },
@@ -481,6 +483,8 @@ bool wallet_rpc_server::on_create_integrated(const wallet_rpc::COMMAND_RPC_CREAT
     const bool valid = CryptoNote::parseAccountAddressString(prefix, 
                                                             addr,
                                                             address_str);
+    if (!valid)
+        logger(Logging::ERROR) << "Couldn't parse the address string!";
 
     CryptoNote::BinaryArray ba;
     CryptoNote::toBinaryArray(addr, ba);
@@ -500,11 +504,19 @@ bool wallet_rpc_server::on_create_integrated(const wallet_rpc::COMMAND_RPC_CREAT
 /* --------------------------------------------------------------------------------- */
 
 bool wallet_rpc_server::on_get_transfers(const wallet_rpc::COMMAND_RPC_GET_TRANSFERS::request& req, wallet_rpc::COMMAND_RPC_GET_TRANSFERS::response& res) {
+  uint64_t min_height = 0, max_height = CryptoNote::parameters::MAX_BLOCK_NUMBER;
+  if (req.filter_by_height) {
+    min_height = req.min_height;
+    max_height = req.max_height <= max_height ? req.max_height : max_height;
+  }
   res.transfers.clear();
   size_t transactionsCount = m_wallet.getTransactionCount();
   for (size_t trantransactionNumber = 0; trantransactionNumber < transactionsCount; ++trantransactionNumber) {
     WalletLegacyTransaction txInfo;
     m_wallet.getTransaction(trantransactionNumber, txInfo);
+    if (txInfo.blockHeight < min_height || txInfo.blockHeight > max_height) { // filter by block height
+      continue;
+    }
     if (txInfo.state != WalletLegacyTransactionState::Active || txInfo.blockHeight == WALLET_LEGACY_UNCONFIRMED_TRANSACTION_HEIGHT) {
       continue;
     }
@@ -542,6 +554,46 @@ bool wallet_rpc_server::on_get_transfers(const wallet_rpc::COMMAND_RPC_GET_TRANS
   return true;
 }
 
+bool wallet_rpc_server::on_get_transfer_by_txid(const wallet_rpc::COMMAND_RPC_GET_TRANSFER_BY_TXID::request& req, wallet_rpc::COMMAND_RPC_GET_TRANSFER_BY_TXID::response& res) {
+  Crypto::Hash txid;  
+
+  if (!Common::podFromHex(req.txid, txid)) {
+    throw JsonRpc::JsonRpcError(WALLET_RPC_ERROR_CODE_WRONG_TXID, "txid has an invalid format");
+  }
+
+  WalletLegacyTransaction txInfo;
+  m_wallet.getTransactionByHash(txid, txInfo);
+
+  std::string address = "";
+  if (txInfo.totalAmount < 0) {
+    if (txInfo.transferCount > 0) {
+      WalletLegacyTransfer tr;
+      m_wallet.getTransfer(txInfo.firstTransferId, tr);
+      address = tr.address;
+    }
+  }
+
+  res.transfer.time = txInfo.timestamp;
+  res.transfer.output = txInfo.totalAmount < 0;
+  res.transfer.transactionHash = Common::podToHex(txInfo.hash);
+  res.transfer.amount = std::abs(txInfo.totalAmount);
+  res.transfer.fee = txInfo.fee;
+  res.transfer.address = address;
+  res.transfer.blockIndex = txInfo.blockHeight;
+  res.transfer.unlockTime = txInfo.unlockTime;
+  res.transfer.paymentId = "";
+
+  std::vector<uint8_t> extraVec;
+  extraVec.reserve(txInfo.extra.size());
+  std::for_each(txInfo.extra.begin(), txInfo.extra.end(), [&extraVec](const char el) { extraVec.push_back(el); });
+
+  Crypto::Hash paymentId;
+  res.transfer.paymentId = (getPaymentIdFromTxExtra(extraVec, paymentId) && paymentId != NULL_HASH ? Common::podToHex(paymentId) : "");
+
+
+  return true;
+}
+
 bool wallet_rpc_server::on_get_height(const wallet_rpc::COMMAND_RPC_GET_HEIGHT::request& req, wallet_rpc::COMMAND_RPC_GET_HEIGHT::response& res) {
   res.height = m_node.getLastLocalBlockHeight();
   return true;
@@ -554,6 +606,26 @@ bool wallet_rpc_server::on_get_outputs(const wallet_rpc::COMMAND_RPC_GET_OUTPUTS
 
 bool wallet_rpc_server::on_reset(const wallet_rpc::COMMAND_RPC_RESET::request& req, wallet_rpc::COMMAND_RPC_RESET::response& res) {
   m_wallet.reset();
+  return true;
+}
+
+bool wallet_rpc_server::on_get_tx_key(const wallet_rpc::COMMAND_RPC_GET_TX_KEY::request& req, wallet_rpc::COMMAND_RPC_GET_TX_KEY::response& res)
+{
+  Crypto::Hash txid;
+  if (!parse_hash256(req.tx_hash, txid))
+  {
+    throw JsonRpc::JsonRpcError(WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR, std::string("Failed to parse txid"));
+  }
+
+  Crypto::SecretKey tx_key = m_wallet.getTxKey(txid);
+	if (tx_key != NULL_SECRET_KEY)
+  {
+    res.tx_key = Common::podToHex(tx_key);
+  }
+  else
+  {
+    throw JsonRpc::JsonRpcError(WALLET_RPC_ERROR_CODE_UNKNOWN_ERROR, std::string("No tx key found for this txid"));
+  }
   return true;
 }
 

@@ -88,6 +88,8 @@ namespace CryptoNote
     bool show_blockchain_height(const std::vector<std::string> &args);
     bool show_num_unlocked_outputs(const std::vector<std::string> &args);
     bool optimize_outputs(const std::vector<std::string> &args);
+    bool get_tx_key(const std::vector<std::string> &args);
+    bool check_tx_proof(const std::vector<std::string> &args);
 	  bool get_reserve_proof(const std::vector<std::string> &args);    
     bool get_tx_proof(const std::vector<std::string> &args);    
     bool optimize_all_outputs(const std::vector<std::string> &args);
@@ -102,6 +104,13 @@ namespace CryptoNote
     void printConnectionError() const;
 
     std::string generate_mnemonic(Crypto::SecretKey &);
+
+    /* Banking */
+    bool createDeposit(const std::vector<std::string> &args);
+    bool confirmDeposit(TransferCommand);
+    bool getDepositCount(const std::vector<std::string> &args);
+    /* withdrawDeposit() needs testing with a wallet with a matured deposit */
+    bool withdrawDeposit(const std::vector<std::string> &args);
 
     //---------------- IWalletLegacyObserver -------------------------
     virtual void initCompleted(std::error_code result) override;
@@ -183,5 +192,8 @@ namespace CryptoNote
     bool m_walletSynchronized;
     std::mutex m_walletSynchronizedMutex;
     std::condition_variable m_walletSynchronizedCV;
+
+    std::atomic<CryptoNote::TransactionId> m_depositId;
+    std::atomic<CryptoNote::TransactionId> m_sentMessageId;
   };
 }

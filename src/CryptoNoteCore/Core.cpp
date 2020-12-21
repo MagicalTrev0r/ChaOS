@@ -113,6 +113,10 @@ bool core::rollback_chain_to(uint32_t height) {
   return m_blockchain.rollbackBlockchainTo(height);
 }
 
+bool core::saveBlockchain() {
+  return m_blockchain.storeCache();
+}
+
 bool core::get_blocks(uint32_t start_offset, uint32_t count, std::list<Block>& blocks, std::list<Transaction>& txs) {
   return m_blockchain.getBlocks(start_offset, count, blocks, txs);
 }
@@ -1125,6 +1129,21 @@ bool core::addMessageQueue(MessageQueue<BlockchainMessage>& messageQueue) {
 
 bool core::removeMessageQueue(MessageQueue<BlockchainMessage>& messageQueue) {
   return m_blockchain.removeMessageQueue(messageQueue);
+}
+
+std::vector<Crypto::Hash> core::getTransactionHashesByPaymentId(const Crypto::Hash& paymentId) {
+  logger(DEBUGGING) << "getTransactionHashesByPaymentId request with paymentId " << paymentId;
+
+  std::vector<Crypto::Hash> blockchainTransactionHashes;
+  m_blockchain.getTransactionIdsByPaymentId(paymentId, blockchainTransactionHashes);
+
+  std::vector<Crypto::Hash> poolTransactionHashes;
+  m_mempool.getTransactionIdsByPaymentId(paymentId, poolTransactionHashes);
+
+  blockchainTransactionHashes.reserve(blockchainTransactionHashes.size() + poolTransactionHashes.size());
+  std::move(poolTransactionHashes.begin(), poolTransactionHashes.end(), std::back_inserter(blockchainTransactionHashes));
+
+  return blockchainTransactionHashes;
 }
 
 }

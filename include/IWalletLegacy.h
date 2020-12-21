@@ -16,6 +16,7 @@
 #include <vector>
 #include <list>
 #include <boost/optional.hpp>
+#include "crypto/crypto.h"
 #include "CryptoNote.h"
 #include "CryptoNoteCore/CryptoNoteBasic.h"
 #include "Rpc/CoreRpcServerCommandsDefinitions.h"
@@ -137,6 +138,7 @@ public:
   virtual TransactionId findTransactionByTransferId(TransferId transferId) = 0;
   virtual void getAccountKeys(AccountKeys& keys) = 0;
   virtual bool getTransaction(TransactionId transactionId, WalletLegacyTransaction& transaction) = 0;
+  virtual bool getTransactionByHash(const Crypto::Hash& hash, WalletLegacyTransaction& transaction) = 0;
   virtual bool getTransfer(TransferId transferId, WalletLegacyTransfer& transfer) = 0;
   virtual bool getDeposit(DepositId depositId, Deposit& deposit) = 0;
   virtual std::vector<Payments> getTransactionsByPaymentIds(const std::vector<PaymentId>& paymentIds) const = 0;
@@ -152,6 +154,7 @@ public:
   virtual TransactionId deposit(uint64_t term, uint64_t amount, uint64_t fee, uint64_t mixIn = 0) = 0;
   virtual TransactionId withdrawDeposits(const std::vector<DepositId>& depositIds, uint64_t fee) = 0;
   virtual std::error_code cancelTransaction(size_t transferId) = 0;
+  virtual bool checkTxProof(Crypto::Hash& txid, CryptoNote::AccountPublicAddress& address, std::string& sig_str) = 0;
 
 };
 

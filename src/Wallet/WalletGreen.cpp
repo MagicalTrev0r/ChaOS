@@ -287,7 +287,6 @@ namespace CryptoNote
                                                                                                                                                                 m_unlockedDepositBalance(0),
                                                                                                                                                                 m_transactionSoftLockTime(transactionSoftLockTime)
   {
-    m_upperTransactionSizeLimit = parameters::MAX_SAFE_TX_SIZE;
     m_readyEvent.set();
   }
 
@@ -2668,6 +2667,15 @@ namespace CryptoNote
       tx->signInputKey(i++, input.keyInfo, input.ephKeys);
     }
 
+    SecretKey txkey;
+    tx->getTransactionSecretKey(txkey);
+    
+    m_logger(Logging::DEBUGGING) << "Transaction created, hash " << Common::podToHex(tx->getTransactionHash()) <<
+      ", inputs " << m_currency.formatAmount(tx->getInputTotalAmount()) <<
+      ", outputs " << m_currency.formatAmount(tx->getOutputTotalAmount()) <<
+      ", fee " << m_currency.formatAmount(tx->getInputTotalAmount() - tx->getOutputTotalAmount()) <<
+      ", key " << Common::podToHex(txkey);
+
     return tx;
   }
 
@@ -2697,7 +2705,9 @@ namespace CryptoNote
   {
     BinaryArray transactionData = transaction.getTransactionData();
 
-    if ((transactionData.size() > m_upperTransactionSizeLimit) && (isFusion == false))
+    size_t maxTxSize = getMaxTxSize();
+
+    if (transactionData.size() > maxTxSize)
     {
       m_logger(ERROR, BRIGHT_RED) << "Transaction is too big";
       throw std::system_error(make_error_code(error::TRANSACTION_SIZE_TOO_BIG));
@@ -3144,6 +3154,21 @@ namespace CryptoNote
 
     return result;
   }
+
+  Crypto::SecretKey WalletGreen::getTransactionSecretKey(size_t transactionIndex) const
+  {
+    throwIfNotInitialized();
+    throwIfStopped();
+
+    if (m_transactions.size() <= transactionIndex)
+    {
+      m_logger(ERROR, BRIGHT_RED) << "Failed to get transaction: invalid index " << transactionIndex << ". Number of transactions: " << m_transactions.size();
+      throw std::system_error(make_error_code(CryptoNote::error::INDEX_OUT_OF_RANGE));
+    }
+
+    return m_transactions.get<RandomAccessIndex>()[transactionIndex].secretKey.get();
+  }
+
 
   void WalletGreen::start()
   {
@@ -4495,7 +4520,7 @@ namespace CryptoNote
   }
 
   bool WalletGreen::txIsTooLarge(const TransactionParameters& sendingTransaction) {
-    return getTxSize(sendingTransaction) > m_upperTransactionSizeLimit;
+    return getTxSize(sendingTransaction) > getMaxTxSize();
   }
 
   void WalletGreen::deleteFromUncommitedTransactions(const std::vector<size_t> &deletedTransactions)
@@ -4530,5 +4555,36 @@ namespace CryptoNote
   void WalletGreen::updateInternalCache() {
     System::RemoteContext<void> updateInternalBC(m_dispatcher, [this] () {});
     updateInternalBC.get();
+  }
+  
+  /* We get the current block size, then we take off the reserved size
+     for the miner transaction.
+       
+     The block size slowly grows over time.
+     The block can grow up to two times because of elastic blocks, but this
+     doesn't always happen so it's better to have a transaction that will always
+     fit in the block of now, rather than tommorrow.
+     For more info, see CryptoNoteCore/Core.cpp/getMaximumTransactionAllowedSize
+     and CryptoNoteCore/Core.cpp/maxBlockCumulativeSize
+  */
+  size_t WalletGreen::getMaxTxSize()
+  {
+    uint32_t currentHeight = m_node.getLastKnownBlockHeight();
+
+    size_t growth = (currentHeight * CryptoNote::parameters::MAX_BLOCK_SIZE_GROWTH_SPEED_NUMERATOR) /
+                      CryptoNote::parameters::MAX_BLOCK_SIZE_GROWTH_SPEED_DENOMINATOR;
+
+    size_t maxSize = CryptoNote::parameters::MAX_BLOCK_SIZE_INITIAL + growth;
+
+    if (maxSize < CryptoNote::parameters::MAX_BLOCK_SIZE_INITIAL)
+    {
+      std::cout << "Failed to calculate correct max transaction size..."
+                    << std::endl;
+
+      return CryptoNote::parameters::MAX_BLOCK_SIZE_INITIAL -
+                 CryptoNote::parameters::COINBASE_BLOB_RESERVED_SIZE;
+    }
+
+    return maxSize - CryptoNote::parameters::COINBASE_BLOB_RESERVED_SIZE;
   }
 } //namespace CryptoNote
