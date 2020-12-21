@@ -1,8 +1,10 @@
 // Copyright (c) 2011-2017 The Cryptonote developers
 // Copyright (c) 2017-2018 The Circle Foundation & Conceal Devs
 // Copyright (c) 2018-2019 Conceal Network & Conceal Devs
-// Distributed under the MIT/X11 software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2020 - The Cache Developers
+//
+// Distributed under the GNU Lesser General Public License v3.0.
+// Please read Cache/License.md
 
 #pragma once
 
@@ -96,6 +98,8 @@ core(const Currency& currency, i_cryptonote_protocol* pprotocol, Logging::ILogge
      bool get_blocks(uint32_t start_offset, uint32_t count, std::list<Block>& blocks, std::list<Transaction>& txs);
      bool get_blocks(uint32_t start_offset, uint32_t count, std::list<Block>& blocks);
      bool rollback_chain_to(uint32_t height);
+     virtual bool saveBlockchain() override;
+
      template<class t_ids_container, class t_blocks_container, class t_missed_container>
      bool get_blocks(const t_ids_container& block_ids, t_blocks_container& blocks, t_missed_container& missed_bs)
      {
@@ -103,9 +107,9 @@ core(const Currency& currency, i_cryptonote_protocol* pprotocol, Logging::ILogge
      }
      virtual bool queryBlocks(const std::vector<Crypto::Hash>& block_ids, uint64_t timestamp,
        uint32_t& start_height, uint32_t& current_height, uint32_t& full_offset, std::vector<BlockFullInfo>& entries) override;
-    virtual bool queryBlocksLite(const std::vector<Crypto::Hash>& knownBlockIds, uint64_t timestamp,
+     virtual bool queryBlocksLite(const std::vector<Crypto::Hash>& knownBlockIds, uint64_t timestamp,
       uint32_t& resStartHeight, uint32_t& resCurrentHeight, uint32_t& resFullOffset, std::vector<BlockShortInfo>& entries) override;
-    virtual Crypto::Hash getBlockIdByHeight(uint32_t height) override;
+     virtual Crypto::Hash getBlockIdByHeight(uint32_t height) override;
      void getTransactions(const std::vector<Crypto::Hash>& txs_ids, std::list<Transaction>& txs, std::list<Crypto::Hash>& missed_txs, bool checkTxPool = false) override;
      virtual bool getBlockByHash(const Crypto::Hash &h, Block &blk) override;
      virtual bool getBlockHeight(const Crypto::Hash& blockId, uint32_t& blockHeight) override;

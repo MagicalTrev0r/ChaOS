@@ -2,8 +2,10 @@
 // Copyright (c) 2017-2018 The Circle Foundation & Conceal Devs
 // Copyright (c) 2018-2020 Karbo developers
 // Copyright (c) 2018-2020 Conceal Network & Conceal Devs
-// Distributed under the MIT/X11 software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2020 - The Cache Developers
+//
+// Distributed under the GNU Lesser General Public License v3.0.
+// Please read Cache/License.md
 
 #pragma once
 
@@ -121,6 +123,9 @@ namespace CryptoNote
     uint64_t coinsEmittedAtHeight(uint64_t height);
     uint64_t difficultyAtHeight(uint64_t height);
     bool isInCheckpointZone(const uint32_t height);
+
+    void rebuildCache();
+    bool storeCache();
 
     template <class visitor_t>
     bool scanOutputKeysForIndexes(const KeyInput &tx_in_to_key, visitor_t &vis, uint32_t *pmax_related_block_height = NULL);
@@ -305,8 +310,6 @@ namespace CryptoNote
 
     Logging::LoggerRef logger;
 
-    void rebuildCache();
-    bool storeCache();
     bool switch_to_alternative_blockchain(std::list<blocks_ext_by_hash::iterator> &alt_chain, bool discard_disconnected_chain);
     bool handle_alternative_block(const Block &b, const Crypto::Hash &id, block_verification_context &bvc, bool sendNewAlternativeBlockMessage = true);
     difficulty_type get_next_difficulty_for_alternative_chain(const std::list<blocks_ext_by_hash::iterator> &alt_chain, BlockEntry &bei);

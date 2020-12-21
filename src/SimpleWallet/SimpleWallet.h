@@ -1,8 +1,8 @@
 // Copyright (c) 2011-2017 The Cryptonote developers
-// Copyright (c) 2017-2018 The Circle Foundation & Conceal Devs
-// Copyright (c) 2018-2019 Conceal Network & Conceal Devs
-// Distributed under the MIT/X11 software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2020 - The Cache Developers
+//
+// Distributed under the GNU Lesser General Public License v3.0.
+// Please read Cache/License.md
 
 #pragma once
 
@@ -105,6 +105,13 @@ namespace CryptoNote
 
     std::string generate_mnemonic(Crypto::SecretKey &);
 
+    /* Banking */
+    bool createDeposit(const std::vector<std::string> &args);
+    bool confirmDeposit(TransferCommand);
+    bool getDepositCount(const std::vector<std::string> &args);
+    /* withdrawDeposit() needs testing with a wallet with a matured deposit */
+    bool withdrawDeposit(const std::vector<std::string> &args);
+
     //---------------- IWalletLegacyObserver -------------------------
     virtual void initCompleted(std::error_code result) override;
     virtual void externalTransactionCreated(CryptoNote::TransactionId transactionId) override;
@@ -185,5 +192,8 @@ namespace CryptoNote
     bool m_walletSynchronized;
     std::mutex m_walletSynchronizedMutex;
     std::condition_variable m_walletSynchronizedCV;
+
+    std::atomic<CryptoNote::TransactionId> m_depositId;
+    std::atomic<CryptoNote::TransactionId> m_sentMessageId;
   };
 }

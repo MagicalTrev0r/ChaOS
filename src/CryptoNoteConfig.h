@@ -1,9 +1,10 @@
 // Copyright (c) 2011-2017 The Cryptonote Developers
 // Copyright (c) 2017-2018 The Circle Foundation & Conceal Devs
 // Copyright (c) 2018-2019 Conceal Network & Conceal Devs
+// Copyright (c) 2020 - The Cache Developers
 //
-// Distributed under the MIT/X11 software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Distributed under the GNU Lesser General Public License v3.0.
+// Please read Cache/License.md
 
 #pragma once
 
@@ -108,7 +109,7 @@ namespace CryptoNote {
   const int      P2P_DEFAULT_PORT = 38999;
   const int      RPC_DEFAULT_PORT = 39000;
 
-  const uint8_t  P2P_CURRENT_VERSION = 1;
+  const uint8_t  P2P_CURRENT_VERSION = 2;
   const uint8_t  P2P_MINIMUM_VERSION = 1;
 
   const uint8_t  TRANSACTION_VERSION_1 = 1;

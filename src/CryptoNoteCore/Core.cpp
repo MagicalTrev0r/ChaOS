@@ -1,8 +1,10 @@
 // Copyright (c) 2011-2017 The Cryptonote developers
 // Copyright (c) 2017-2018 The Circle Foundation & Conceal Devs
 // Copyright (c) 2018-2019 Conceal Network & Conceal Devs
-// Distributed under the MIT/X11 software license, see the accompanying
-// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+// Copyright (c) 2020 - The Cache Developers
+//
+// Distributed under the GNU Lesser General Public License v3.0.
+// Please read Cache/License.md
 
 #include "Core.h"
 
@@ -111,6 +113,10 @@ void core::get_blockchain_top(uint32_t& height, Crypto::Hash& top_id) {
 
 bool core::rollback_chain_to(uint32_t height) {
   return m_blockchain.rollbackBlockchainTo(height);
+}
+
+bool core::saveBlockchain() {
+  return m_blockchain.storeCache();
 }
 
 bool core::get_blocks(uint32_t start_offset, uint32_t count, std::list<Block>& blocks, std::list<Transaction>& txs) {

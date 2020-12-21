@@ -31,6 +31,7 @@ DaemonCommandsHandler::DaemonCommandsHandler(CryptoNote::core& core, CryptoNote:
   m_core(core), m_srv(srv), logger(log, "daemon"), m_logManager(log), protocolQuery(protocol), m_prpc_server(prpc_server) {
   m_consoleHandler.setHandler("exit", boost::bind(&DaemonCommandsHandler::exit, this, _1), "Shutdown the daemon");
   m_consoleHandler.setHandler("help", boost::bind(&DaemonCommandsHandler::help, this, _1), "Show this help");
+  m_consoleHandler.setHandler("save", boost::bind(&DaemonCommandsHandler::save, this, _1), "Save the blockchain");
   m_consoleHandler.setHandler("print_pl", boost::bind(&DaemonCommandsHandler::print_pl, this, _1), "Print peer list");
   m_consoleHandler.setHandler("rollback_chain", boost::bind(&DaemonCommandsHandler::rollback_chain, this, _1), "Rollback chain to specific height, rollback_chain <height>");
   m_consoleHandler.setHandler("print_cn", boost::bind(&DaemonCommandsHandler::print_cn, this, _1), "Print connections");
@@ -72,6 +73,11 @@ bool DaemonCommandsHandler::exit(const std::vector<std::string>& args) {
 //--------------------------------------------------------------------------------
 bool DaemonCommandsHandler::help(const std::vector<std::string>& args) {
   std::cout << get_commands_str() << ENDL;
+  return true;
+}
+//--------------------------------------------------------------------------------
+bool DaemonCommandsHandler::save(const std::vector<std::string>& args) {
+  m_core.saveBlockchain();
   return true;
 }
 //--------------------------------------------------------------------------------
