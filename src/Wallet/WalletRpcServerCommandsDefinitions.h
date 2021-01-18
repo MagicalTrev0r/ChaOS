@@ -231,18 +231,7 @@ using CryptoNote::ISerializer;
   };
 
   struct COMMAND_RPC_GET_TRANSFERS {
-    struct request
-    {
-      bool filter_by_height;
-      uint64_t min_height;
-      uint64_t max_height;
-
-      void serialize(ISerializer& s) {
-        KV_MEMBER(filter_by_height);
-        KV_MEMBER(min_height);
-        KV_MEMBER(max_height);
-      }
-    };
+    typedef CryptoNote::EMPTY_STRUCT request;
 
     struct response {
       std::list<Transfer> transfers;
