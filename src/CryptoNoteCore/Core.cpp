@@ -8,8 +8,10 @@
 
 #include "Core.h"
 
+#include <boost/filesystem.hpp>
 #include <sstream>
 #include <unordered_set>
+
 #include "../CryptoNoteConfig.h"
 #include "../Common/CommandLine.h"
 #include "../Common/Util.h"
@@ -1146,6 +1148,24 @@ std::vector<Crypto::Hash> core::getTransactionHashesByPaymentId(const Crypto::Ha
   std::move(poolTransactionHashes.begin(), poolTransactionHashes.end(), std::back_inserter(blockchainTransactionHashes));
 
   return blockchainTransactionHashes;
+}
+
+bool core::check_disk_space()
+{
+  uint64_t free_space = get_free_space();
+  if (free_space < 1ull * 1024 * 1024 * 1024) // 1 GB
+  {
+    logger(INFO, BRIGHT_RED) << "Free space is below 1 GB on " << m_config_folder;
+  }
+
+  return true;
+}
+
+uint64_t core::get_free_space() const
+{
+  boost::filesystem::path path(m_config_folder);
+  boost::filesystem::space_info si = boost::filesystem::space(path);
+  return si.available;
 }
 
 }

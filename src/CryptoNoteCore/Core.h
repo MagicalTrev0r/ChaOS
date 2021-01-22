@@ -159,6 +159,12 @@ core(const Currency& currency, i_cryptonote_protocol* pprotocol, Logging::ILogge
 
      bool is_key_image_spent(const Crypto::KeyImage& key_im);
 
+     /**
+      * @brief get free disk space on the blockchain partition
+      * @return free space in bytes
+      */
+     uint64_t get_free_space() const;
+
    private:
      bool add_new_tx(const Transaction& tx, const Crypto::Hash& tx_hash, size_t blob_size, tx_verification_context& tvc, bool keeped_by_block, uint32_t height);
      bool load_state_data();
@@ -170,7 +176,11 @@ core(const Currency& currency, i_cryptonote_protocol* pprotocol, Logging::ILogge
      bool check_tx_semantic(const Transaction& tx, bool keeped_by_block, uint32_t &height);
      //check if tx already in memory pool or in main blockchain
 
-
+     /**
+      * @brief checks free disk space
+      * @return true on success, false otherwise
+      */
+     bool check_disk_space();
 
      bool check_tx_ring_signature(const KeyInput& tx, const Crypto::Hash& tx_prefix_hash, const std::vector<Crypto::Signature>& sig);
      bool is_tx_spendtime_unlocked(uint64_t unlock_time);
