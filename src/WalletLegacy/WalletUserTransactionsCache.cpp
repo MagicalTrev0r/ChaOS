@@ -279,9 +279,10 @@ std::deque<std::unique_ptr<WalletLegacyEvent>> WalletUserTransactionsCache::onTr
 
   if (!m_unconfirmedTransactions.findTransactionId(txInfo.transactionHash, id)) {
     id = findTransactionByHash(txInfo.transactionHash);
-  } else {
-    m_unconfirmedTransactions.erase(txInfo.transactionHash);
   }
+  
+  /* Remove uncomfirmed transactions */
+  m_unconfirmedTransactions.erase(txInfo.transactionHash);
 
   if (id == CryptoNote::WALLET_LEGACY_INVALID_TRANSACTION_ID) {
 	WalletLegacyTransaction transaction;
