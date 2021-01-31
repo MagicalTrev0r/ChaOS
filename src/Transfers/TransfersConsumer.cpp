@@ -13,6 +13,7 @@
 #include "CommonTypes.h"
 #include "Common/StringTools.h"
 #include "Common/BlockingQueue.h"
+#include "CryptoNoteCore/CryptoNoteBasicImpl.h"
 #include "CryptoNoteCore/CryptoNoteFormatUtils.h"
 #include "CryptoNoteCore/TransactionApi.h"
 #include "CryptoNoteCore/TransactionExtra.h"
@@ -119,7 +120,7 @@ ITransfersSubscription& TransfersConsumer::addSubscription(const AccountSubscrip
   auto& res = m_subscriptions[subscription.keys.address.spendPublicKey];
 
   if (res.get() == nullptr) {
-    res.reset(new TransfersSubscription(m_currency, subscription));
+    res.reset(new TransfersSubscription(m_currency, m_logger.getLogger(), subscription));
     m_spendKeys.insert(subscription.keys.address.spendPublicKey);
     updateSyncStart();
   }
@@ -524,22 +525,31 @@ std::error_code TransfersConsumer::processTransaction(const TransactionBlockInfo
 void TransfersConsumer::processTransaction(const TransactionBlockInfo& blockInfo, const ITransactionReader& tx, const PreprocessInfo& info) {
   std::vector<TransactionOutputInformationIn> emptyOutputs;
   std::vector<ITransfersContainer*> transactionContainers;
+  
+  m_logger(TRACE) << "Process transaction, block " << blockInfo.height << ", transaction index " << blockInfo.transactionIndex << ", hash " << tx.getTransactionHash();
+
   bool someContainerUpdated = false;
+
   for (auto& kv : m_subscriptions) {
     auto it = info.outputs.find(kv.first);
     auto& subscriptionOutputs = (it == info.outputs.end()) ? emptyOutputs : it->second;
 
     bool containerContainsTx;
     bool containerUpdated;
+
     processOutputs(blockInfo, *kv.second, tx, subscriptionOutputs, info.globalIdxs, containerContainsTx, containerUpdated);
     someContainerUpdated = someContainerUpdated || containerUpdated;
+
     if (containerContainsTx) {
       transactionContainers.emplace_back(&kv.second->getContainer());
     }
   }
 
   if (someContainerUpdated) {
+    m_logger(TRACE) << "Transaction updated some containers, hash " << tx.getTransactionHash();
     m_observerManager.notify(&IBlockchainConsumerObserver::onTransactionUpdated, this, tx.getTransactionHash(), transactionContainers);
+  } else {
+    m_logger(TRACE) << "Transaction doesn't updated any container, hash " << tx.getTransactionHash();
   }
 }
 

@@ -117,3 +117,5 @@ void sc_sub(unsigned char *, const unsigned char *, const unsigned char *);
 void sc_mulsub(unsigned char *, const unsigned char *, const unsigned char *, const unsigned char *);
 int sc_check(const unsigned char *);
 int sc_isnonzero(const unsigned char *); /* Doesn't normalize */
+
+int ge_check_subgroup_precomp_vartime(const ge_dsmp);

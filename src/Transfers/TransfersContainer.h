@@ -20,6 +20,7 @@
 #include "CryptoNoteCore/CryptoNoteBasic.h"
 #include "CryptoNoteCore/CryptoNoteSerialization.h"
 #include "CryptoNoteCore/Currency.h"
+#include "Logging/LoggerRef.h"
 #include "Serialization/ISerializer.h"
 #include "Serialization/SerializationOverloads.h"
 
@@ -185,7 +186,7 @@ class TransfersContainer : public ITransfersContainer {
 
 public:
 
-  TransfersContainer(const CryptoNote::Currency& currency, size_t transactionSpendableAge);
+  TransfersContainer(const CryptoNote::Currency& currency, Logging::ILogger& logger, size_t transactionSpendableAge);
 
   bool addTransaction(const TransactionBlockInfo& block, const ITransactionReader& tx,
                       const std::vector<TransactionOutputInformationIn>& transfers,
@@ -373,6 +374,7 @@ private:
   uint32_t m_currentHeight; // current height is needed to check if a transfer is unlocked
   size_t m_transactionSpendableAge;
   const CryptoNote::Currency& m_currency;
+  Logging::LoggerRef m_logger;
   mutable std::mutex m_mutex;
 };
 

@@ -1912,8 +1912,7 @@ namespace PaymentService
 
       transactionIdIndex.clear();
 
-      size_t i = 0;
-      for (;;)
+      for (size_t i = 0; ; ++i)
       {
         boost::system::error_code ec;
         std::string backup = config.walletFile + ".backup";
