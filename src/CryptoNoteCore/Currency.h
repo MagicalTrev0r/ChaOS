@@ -13,6 +13,7 @@
 #include <vector>
 #include <boost/utility.hpp>
 #include "../CryptoNoteConfig.h"
+#include "Common/Types.h"
 #include "../crypto/hash.h"
 #include "../Logging/LoggerRef.h"
 #include "CryptoNoteBasic.h"
@@ -26,13 +27,14 @@ namespace CryptoNote
   class Currency
   {
   public:
-    static const std::vector<uint64_t> PRETTY_AMOUNTS;
+    static const std::vector<Amount> PRETTY_AMOUNTS;
+    static const std::vector<Amount> REWARD_INCREASING_FACTOR;
 
-    uint64_t maxBlockHeight() const { return m_maxBlockHeight; }
+    Height maxBlockHeight() const { return m_maxBlockHeight; }
     size_t maxBlockBlobSize() const { return m_maxBlockBlobSize; }
     size_t maxTxSize() const { return m_maxTxSize; }
-    uint64_t publicAddressBase58Prefix() const { return m_publicAddressBase58Prefix; }
-    size_t minedMoneyUnlockWindow() const { return m_minedMoneyUnlockWindow; }
+    Prefix publicAddressBase58Prefix() const { return m_publicAddressBase58Prefix; }
+    Height minedMoneyUnlockWindow() const { return m_minedMoneyUnlockWindow; }
 
     size_t timestampCheckWindow() const { return m_timestampCheckWindow; }
     size_t timestampCheckWindow(uint8_t blockMajorVersion) const { return timestampCheckWindow(); }
@@ -40,7 +42,7 @@ namespace CryptoNote
     uint64_t blockFutureTimeLimit() const { return m_blockFutureTimeLimit; }
     uint64_t blockFutureTimeLimit(uint8_t blockMajorVersion) const { return blockFutureTimeLimit(); }
 
-    uint64_t moneySupply() const { return m_moneySupply; }
+    Amount moneySupply() const { return m_moneySupply; }
     //uint64_t genesisBlockReward() const { return m_genesisBlockReward; }
 
     size_t rewardBlocksWindow() const { return m_rewardBlocksWindow; }
@@ -55,18 +57,19 @@ namespace CryptoNote
     size_t numberOfDecimalPlaces() const { return m_numberOfDecimalPlaces; }
     uint64_t coin() const { return m_coin; }
 
-    uint64_t minimumFee() const { return m_minimumFee; }
-    uint64_t minimumFeeBanking() const { return m_minimumFeeBanking; }
+    Amount minimumFee() const { return m_minimumFee; }
+    Amount minimumFeeBanking() const { return m_minimumFeeBanking; }
 
-    uint64_t defaultDustThreshold() const { return m_defaultDustThreshold; }
+    Amount defaultDustThreshold() const { return m_defaultDustThreshold; }
 
-    uint64_t difficultyTarget() const { return m_difficultyTarget; }
+    BlockOrTimestamp difficultyTarget() const { return m_difficultyTarget; }
     size_t difficultyWindow() const { return m_difficultyWindow; }
     size_t difficultyBlocksCount() const { return CryptoNote::parameters::DIFFICULTY_BLOCKS_COUNT; }
 
-    uint64_t depositMinAmount() const { return m_depositMinAmount; }
-    uint32_t depositMinTerm() const { return m_depositMinTerm; }
-    uint32_t depositMaxTerm() const { return m_depositMaxTerm; }
+    Amount depositMinAmount() const { return m_depositMinAmount; }
+    Height depositMinTerm() const { return m_depositMinTerm; }
+    Height depositMaxTerm() const { return m_depositMaxTerm; }
+
     uint64_t depositMinTotalRateFactor() const { return m_depositMinTotalRateFactor; }
     uint64_t depositMaxTotalRate() const { return m_depositMaxTotalRate; }
 
@@ -150,17 +153,17 @@ namespace CryptoNote
     uint64_t baseRewardFunction(uint64_t alreadyGeneratedCoins, uint32_t height) const;
 
   private:
-    uint64_t m_maxBlockHeight;
+    Height m_maxBlockHeight;
     size_t m_maxBlockBlobSize;
     size_t m_maxTxSize;
-    uint64_t m_publicAddressBase58Prefix;
+    Prefix m_publicAddressBase58Prefix;
     size_t m_minedMoneyUnlockWindow;
 
     size_t m_timestampCheckWindow;
 
     uint64_t m_blockFutureTimeLimit;
 
-    uint64_t m_moneySupply;
+    Amount m_moneySupply;
     //uint64_t m_genesisBlockReward;
 
     size_t m_rewardBlocksWindow;
@@ -175,16 +178,17 @@ namespace CryptoNote
     size_t m_numberOfDecimalPlaces;
     uint64_t m_coin;
 
-    uint64_t m_minimumFee;
-    uint64_t m_minimumFeeBanking;
-    uint64_t m_defaultDustThreshold;
+    Amount m_minimumFee;
+    Amount m_minimumFeeBanking;
+    Amount m_defaultDustThreshold;
 
-    uint64_t m_difficultyTarget;
+    BlockOrTimestamp m_difficultyTarget;
     size_t m_difficultyWindow;
 
-    uint64_t m_depositMinAmount;
-    uint32_t m_depositMinTerm;
-    uint32_t m_depositMaxTerm;
+    Amount m_depositMinAmount;
+    Height m_depositMinTerm;
+    Height m_depositMaxTerm;
+
     uint64_t m_depositMinTotalRateFactor;
     uint64_t m_depositMaxTotalRate;
 
@@ -199,8 +203,8 @@ namespace CryptoNote
     uint64_t m_mempoolTxFromAltBlockLiveTime;
     uint64_t m_numberOfPeriodsToForgetTxDeletedFromPool;
 
-    uint32_t m_upgradeHeightV2;
-    uint32_t m_upgradeHeightV3;
+    Height m_upgradeHeightV2;
+    Height m_upgradeHeightV3;
 
     unsigned int m_upgradeVotingThreshold;
     uint32_t m_upgradeVotingWindow;
@@ -216,8 +220,6 @@ namespace CryptoNote
     std::string m_blockIndexesFileName;
     std::string m_txPoolFileName;
     std::string m_blockchinIndicesFileName;
-
-    static const std::vector<uint64_t> REWARD_INCREASING_FACTOR;
 
     bool m_testnet;
     std::string m_genesisCoinbaseTxHex;
@@ -247,7 +249,7 @@ namespace CryptoNote
     Transaction generateGenesisTransaction();
     //Transaction generateGenesisTransaction(const std::vector<AccountPublicAddress>& targets);
 
-    CurrencyBuilder &maxBlockNumber(uint64_t val)
+    CurrencyBuilder &maxBlockNumber(Height val)
     {
       m_currency.m_maxBlockHeight = val;
       return *this;
@@ -262,7 +264,7 @@ namespace CryptoNote
       m_currency.m_maxTxSize = val;
       return *this;
     }
-    CurrencyBuilder &publicAddressBase58Prefix(uint64_t val)
+    CurrencyBuilder &publicAddressBase58Prefix(Prefix val)
     {
       m_currency.m_publicAddressBase58Prefix = val;
       return *this;
@@ -283,7 +285,7 @@ namespace CryptoNote
       m_currency.m_blockFutureTimeLimit = val;
       return *this;
     }
-    CurrencyBuilder &moneySupply(uint64_t val)
+    CurrencyBuilder &moneySupply(Amount val)
     {
       m_currency.m_moneySupply = val;
       return *this;
@@ -324,40 +326,42 @@ namespace CryptoNote
 
     CurrencyBuilder &numberOfDecimalPlaces(size_t val);
 
-    CurrencyBuilder &minimumFee(uint64_t val)
+    CurrencyBuilder &minimumFee(Amount val)
     {
       m_currency.m_minimumFee = val;
       return *this;
     }
-    CurrencyBuilder &minimumFeeBanking(uint64_t val)
+    CurrencyBuilder &minimumFeeBanking(Amount val)
     {
       m_currency.m_minimumFeeBanking = val;
       return *this;
     }
 
-    CurrencyBuilder &defaultDustThreshold(uint64_t val)
+    CurrencyBuilder &defaultDustThreshold(Amount val)
     {
       m_currency.m_defaultDustThreshold = val;
       return *this;
     }
 
-    CurrencyBuilder &difficultyTarget(uint64_t val)
+    CurrencyBuilder &difficultyTarget(BlockOrTimestamp val)
     {
       m_currency.m_difficultyTarget = val;
       return *this;
     }
+
     CurrencyBuilder &difficultyWindow(size_t val);
-    CurrencyBuilder &depositMinAmount(uint64_t val)
+
+    CurrencyBuilder &depositMinAmount(Amount val)
     {
       m_currency.m_depositMinAmount = val;
       return *this;
     }
-    CurrencyBuilder &depositMinTerm(uint32_t val)
+    CurrencyBuilder &depositMinTerm(Height val)
     {
       m_currency.m_depositMinTerm = val;
       return *this;
     }
-    CurrencyBuilder &depositMaxTerm(uint32_t val)
+    CurrencyBuilder &depositMaxTerm(Height val)
     {
       m_currency.m_depositMaxTerm = val;
       return *this;
@@ -416,12 +420,12 @@ namespace CryptoNote
       return *this;
     }
 
-    CurrencyBuilder &upgradeHeightV2(uint64_t val)
+    CurrencyBuilder &upgradeHeightV2(Height val)
     {
       m_currency.m_upgradeHeightV2 = val;
       return *this;
     }
-    CurrencyBuilder &upgradeHeightV3(uint64_t val)
+    CurrencyBuilder &upgradeHeightV3(Height val)
     {
       m_currency.m_upgradeHeightV3 = val;
       return *this;

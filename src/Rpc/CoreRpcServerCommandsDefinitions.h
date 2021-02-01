@@ -264,6 +264,7 @@ struct COMMAND_RPC_GET_INFO {
     std::string fee_address;
     std::string top_block_hash;
     uint64_t height;
+    uint32_t network_height;
     uint64_t difficulty;
     uint64_t tx_count;
     uint64_t tx_pool_size;
@@ -280,11 +281,13 @@ struct COMMAND_RPC_GET_INFO {
     uint64_t last_block_timestamp;
     uint64_t last_block_difficulty;
     uint64_t start_time;
+    uint64_t free_disk_space;
     std::vector<std::string> connections;
 
     void serialize(ISerializer &s) {
       KV_MEMBER(status)
       KV_MEMBER(height)
+      KV_MEMBER(network_height)
       KV_MEMBER(version)
       KV_MEMBER(node_info)
       KV_MEMBER(difficulty)
@@ -304,8 +307,9 @@ struct COMMAND_RPC_GET_INFO {
       KV_MEMBER(last_block_reward)
       KV_MEMBER(last_block_timestamp)
       KV_MEMBER(last_block_difficulty)
+      KV_MEMBER(start_time)
+      KV_MEMBER(free_disk_space)
       KV_MEMBER(connections)
-      KV_MEMBER(start_time)  
     }
   };
 };

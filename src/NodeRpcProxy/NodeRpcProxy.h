@@ -18,6 +18,8 @@
 #include "Common/ObserverManager.h"
 #include "INode.h"
 
+#include "Logging/LoggerRef.h"
+
 namespace System {
   class ContextGroup;
   class Dispatcher;
@@ -36,7 +38,7 @@ public:
 
 class NodeRpcProxy : public CryptoNote::INode {
 public:
-  NodeRpcProxy(const std::string& nodeHost, unsigned short nodePort);
+  NodeRpcProxy(const std::string& nodeHost, unsigned short nodePort, Logging::ILogger& logger);
   virtual ~NodeRpcProxy();
 
   virtual bool addObserver(CryptoNote::INodeObserver* observer) override;
@@ -114,6 +116,7 @@ private:
   };
 
 private:
+  Logging::LoggerRef m_logger;
   State m_state = STATE_NOT_INITIALIZED;
   std::mutex m_mutex;
   std::condition_variable m_cv_initialized;
